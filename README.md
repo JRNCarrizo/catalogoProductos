@@ -9,15 +9,16 @@ Los pedidos se arman en un carrito y se envían por WhatsApp.
 ## Cómo funciona
 
 ```
-Panel de escritorio (tu PC)          GitHub (gratis)           Cliente
-─────────────────────────           ───────────────           ───────
-Cargás vinos / precios / fotos  →  Publicar (git push)  →  Ve el catálogo online
-Guardás productos.json                                  →  Arma pedido por WhatsApp
+Panel de escritorio (tu PC)     GitHub (código)      Netlify (web gratis)     Cliente
+─────────────────────────      ───────────────      ────────────────────     ───────
+Cargás vinos / precios     →   Publicar (push)  →   Deploy automático   →   Ve el catálogo
+Guardás productos.json                                                      Pedido por WhatsApp
 ```
 
 - **Catálogo público:** página web moderna, responsive.
 - **Datos:** archivo `public/data/productos.json` (lo edita el panel).
-- **Hosting:** GitHub Pages, gratis.
+- **Hosting:** Netlify, gratis (subdominio tipo `vinosderemate.netlify.app`).
+- **Código:** GitHub ([JRNCarrizo/catalogoProductos](https://github.com/JRNCarrizo/catalogoProductos)).
 - **Sin medios de pago por ahora:** el cliente manda el pedido listo a tu WhatsApp.
 
 ## Arranque rápido
@@ -51,7 +52,7 @@ En el panel podés:
 - Cambiar precios, stock, ofertas
 - Subir fotos de botellas
 - Guardar (actualiza `productos.json`)
-- **Publicar** (sube los cambios a GitHub; el sitio online se actualiza solo)
+- **Publicar** (sube a GitHub; Netlify actualiza el sitio solo)
 
 Atajo: `Ctrl + S` guarda.
 
@@ -64,7 +65,7 @@ Antes de compartir el catálogo, editá:
 ```ts
 whatsapp: '5491112345678',       // número internacional, sin + ni espacios
 whatsappVisible: '+54 9 11 1234-5678',
-nombre: 'Tu Vinoteca',
+nombre: 'Vinos de Remate',
 email: 'tu@correo.com',
 ciudad: 'Tu ciudad',
 instagram: 'https://instagram.com/tuusuario',
@@ -78,25 +79,19 @@ No hace falta tocar el JSON a mano. El panel escribe en `public/data/productos.j
 
 Las fotos se copian a `public/img/`.
 
-## Publicar online (gratis)
+## Publicar online en Netlify (gratis)
 
-1. Creá un repositorio vacío en GitHub.
-2. En la carpeta del proyecto:
+El código ya está en GitHub. Falta conectar Netlify:
 
-```bash
-git init
-git add .
-git commit -m "Catálogo de vinos"
-git branch -M main
-git remote add origin https://github.com/TU_USUARIO/TU_REPO.git
-git push -u origin main
-```
+1. Entrá a [https://app.netlify.com](https://app.netlify.com) e iniciá sesión **con GitHub**.
+2. **Add new site** → **Import an existing project**.
+3. Elegí el repo `JRNCarrizo/catalogoProductos`.
+4. Netlify detecta `netlify.toml` solo (build: `npm run build`, publish: `dist`). Deploy.
+5. Cuando termine: **Site configuration** → **Domain management** → **Options** → **Edit site name**.
+   Poné algo como `vinosderemate` (si está libre).
+6. El link queda: `https://vinosderemate.netlify.app`
 
-3. En GitHub: **Settings → Pages → Source: GitHub Actions**.
-4. El workflow `.github/workflows/publicar.yml` construye y publica solo.
-5. El link queda así: `https://TU_USUARIO.github.io/TU_REPO/`
-
-Desde entonces, cada vez que toques **Publicar** en el panel, el catálogo online se actualiza.
+Desde entonces, cada vez que toques **Publicar** en el panel (git push), Netlify redeploya solo.
 
 ## Estructura
 
@@ -106,7 +101,7 @@ public/data/            productos.json (fuente de verdad)
 public/img/             fotos de botellas
 src/config/sitio.ts     nombre, WhatsApp, textos de marca
 src/components/         interfaz del catálogo
-.github/workflows/      publicación automática
+netlify.toml            configuración de deploy en Netlify
 ```
 
 ## Scripts
@@ -120,6 +115,7 @@ src/components/         interfaz del catálogo
 
 ## Próximos pasos posibles
 
-- Dominio propio (ej. `vinos.com.ar`) apuntando a GitHub Pages
+- Dominio propio (ej. `vinos.com.ar`) apuntando a Netlify
+- APK colectora + escáner (ver PLAN.md)
 - Exportar PDF del catálogo
 - Mercado Pago cuando quieras cobrar online

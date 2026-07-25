@@ -67,14 +67,19 @@
   (`@electron-internal/extract-zip`). Si `npm install` no baja el binario,
   correr: `node node_modules/electron/install.js`.
 
-### 3.3 Publicación (pendiente de activar)
+### 3.3 Publicación (Netlify)
 
-- Workflow listo: `.github/workflows/publicar.yml` (GitHub Pages, build con
-  `VITE_BASE=/nombre-repo/`).
-- **Falta:** crear el repo en GitHub, primer push, y activar Pages
-  (Settings → Pages → Source: GitHub Actions). Instrucciones en README.md.
-- **Falta:** cargar el WhatsApp real en `src/config/sitio.ts`
-  (hoy tiene `5490000000000` de ejemplo).
+- Repo en GitHub: https://github.com/JRNCarrizo/catalogoProductos
+- Deploy: **Netlify** (gratis), config en `netlify.toml`.
+  - Build: `npm run build` · Publish: `dist` · Base path: `/`
+- Flujo: panel → **Publicar** (git push) → Netlify redeploya solo (1-2 min).
+- Subdominio a elección: Site settings → Domain management
+  (ej. `vinosderemate.netlify.app`).
+- **Falta:** conectar el repo en Netlify (una sola vez) y cargar WhatsApp real
+  en `src/config/sitio.ts`.
+
+~~GitHub Pages~~: se descartó porque no permite elegir un subdominio legible
+(quedaba `jrncarrizo.github.io/catalogoProductos`). El workflow de Pages se eliminó.
 
 ### 3.4 Modelo de datos actual (`src/types.ts`)
 
@@ -103,7 +108,7 @@ CELULAR (APK Capacitor)              PC (Electron)               WEB
 ─────────────────────────           ─────────────────           ─────────
 Colector de productos:        sync  Recibe cambios,      push   Catálogo
 alta/edición, escáner,       ────►  revisa/ajusta,      ────►   online
-funciona OFFLINE                    botón "Actualizar web"      (GitHub Pages)
+funciona OFFLINE                    botón "Actualizar web"      (Netlify)
 ```
 
 - El celular es el **colector**: crea y actualiza productos sin depender de nube.
@@ -119,7 +124,7 @@ funciona OFFLINE                    botón "Actualizar web"      (GitHub Pages)
   1. **Fuente local** (celu y PC guardan con la misma estructura).
   2. **Capa de sync** (hoy celu↔PC; mañana celu/PC↔nube). Los paneles hablan con
      un "repositorio" abstracto, no con un archivo o API concretos.
-  3. **Publicación** (hoy PC→GitHub Pages; con nube podría ser automática).
+  3. **Publicación** (hoy PC→GitHub→Netlify; con nube podría ser automática).
 - Con nube: la APK funciona sola sin PC, se puede dar el sistema a otra persona
   (multi-usuario, un catálogo por persona) y no hace falta "publicar" (tiempo real).
 
@@ -141,7 +146,7 @@ funciona OFFLINE                    botón "Actualizar web"      (GitHub Pages)
 ### 4.4 Orden de construcción acordado
 
 1. (Ya hecho) Catálogo web + panel PC.
-2. Publicar la web online (GitHub Pages) con datos reales de Jorge.
+2. Publicar la web online (Netlify) con datos reales de Jorge.
 3. APK admin (Capacitor): alta/edición de productos, guardado offline.
 4. Escáner de código de barras (flujo de 4.3).
 5. Cola de cambios pendientes + sync celu → PC por WiFi.
@@ -164,7 +169,7 @@ src/components/         UI del catálogo (Encabezado, Portada, Beneficios, Filtr
 src/hooks/              useCatalogo (fetch JSON), useCarrito (localStorage),
                         useSuperposicion (Escape + scroll lock)
 src/lib/                formato (precios es-AR), whatsapp (links wa.me), rutas (base path)
-.github/workflows/publicar.yml   Deploy automático a GitHub Pages
+netlify.toml            Deploy automático en Netlify
 Abrir panel.bat         Doble clic: levanta dev server + panel Electron
 PLAN.md                 Este documento
 README.md               Instrucciones de uso e instalación
@@ -181,7 +186,7 @@ README.md               Instrucciones de uso e instalación
 
 ## 7. Pendientes inmediatos
 
+- [ ] Conectar el repo a Netlify y elegir subdominio (ej. `vinosderemate`).
 - [ ] Poner WhatsApp real y datos de contacto en `src/config/sitio.ts`.
-- [ ] Crear repo en GitHub + primer push + activar Pages (guía en README).
 - [ ] Reemplazar los 8 productos de ejemplo por los vinos reales (desde el panel).
 - [ ] Decidir cuándo arrancar la APK (punto 4.4, paso 3).

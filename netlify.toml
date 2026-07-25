@@ -1,0 +1,17 @@
+# Publicación en Netlify (gratis).
+# Cada push a main dispara un deploy automático.
+# Podés elegir el subdominio en: Site settings → Domain management
+# (ej. vinosderemate.netlify.app)
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# SPA: todas las rutas caen en index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

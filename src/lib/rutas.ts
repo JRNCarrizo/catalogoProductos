@@ -1,6 +1,6 @@
 /**
  * Resuelve rutas de archivos servidos desde /public respetando el base path
- * con el que se publicó el sitio (GitHub Pages usa /nombre-del-repo/).
+ * con el que se publicó el sitio (Netlify usa /, GitHub Pages usaría /repo/).
  */
 export function recurso(ruta: string): string {
   if (!ruta) return ''
