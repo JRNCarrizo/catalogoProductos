@@ -2,6 +2,48 @@
   "pendientes": [],
   "historial": [
     {
+      "id": "ped-1785018987096",
+      "codigo": "#2x2,3x2,1x3,8x5",
+      "fecha": "2026-07-25T22:36:27.096Z",
+      "estado": "confirmado",
+      "origen": "celular",
+      "total": 108100,
+      "items": [
+        {
+          "productoId": "catena-cabernet-2020",
+          "indice": 2,
+          "nombre": "Catena Zapata Cabernet Sauvignon 2020",
+          "cantidad": 2,
+          "precio": 9200
+        },
+        {
+          "productoId": "dv-catena-malbec-malbec",
+          "indice": 3,
+          "nombre": "DV Catena Malbec Malbec 2019",
+          "cantidad": 2,
+          "precio": 14500
+        },
+        {
+          "productoId": "catena-malbec-2021",
+          "indice": 1,
+          "nombre": "Catena Zapata Malbec 2021",
+          "cantidad": 3,
+          "precio": 8900
+        },
+        {
+          "productoId": "espumante-extra-brut",
+          "indice": 8,
+          "nombre": "Bodega seleccionada Extra Brut",
+          "cantidad": 5,
+          "precio": 6800
+        }
+      ],
+      "avisos": [
+        "Cabernet Sauvignon: pedían 2, hay 0",
+        "Malbec Malbec: pedían 2, hay 0"
+      ]
+    },
+    {
       "id": "ped-1785017231448",
       "codigo": "#2x2,3x2",
       "fecha": "2026-07-25T22:07:11.448Z",

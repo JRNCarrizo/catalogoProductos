@@ -2,16 +2,20 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { escanearCodigo } from './escaner'
 import {
   enviarPedidoAPc,
+  enviarPedidosLocalesAPc,
   guardarCatalogo,
   guardarIpPc,
+  guardarPedidoLocal,
   importarCatalogoRemoto,
   leerCambios,
   leerCatalogo,
   leerIpPc,
+  leerPedidosLocales,
   parsearHostSync,
   probarPc,
   registrarCambio,
   sincronizarConPc,
+  type PedidoLocalPendiente,
 } from './storage'
 import { etiquetaProducto, parsearPedido, type PedidoResuelto } from './pedidoCodigo'
 import {
@@ -36,15 +40,21 @@ type Pantalla =
 export default function App() {
   const [catalogo, setCatalogo] = useState<Catalogo | null>(null)
   const [pendientes, setPendientes] = useState(0)
+  const [pedidosLocales, setPedidosLocales] = useState(0)
   const [busqueda, setBusqueda] = useState('')
   const [pantalla, setPantalla] = useState<Pantalla>({ tipo: 'lista' })
   const [aviso, setAviso] = useState<{ texto: string; tipo?: 'ok' | 'error' } | null>(null)
   const [cargando, setCargando] = useState(true)
 
   const refrescar = useCallback(async () => {
-    const [datos, cambios] = await Promise.all([leerCatalogo(), leerCambios()])
+    const [datos, cambios, pedidos] = await Promise.all([
+      leerCatalogo(),
+      leerCambios(),
+      leerPedidosLocales(),
+    ])
     setCatalogo(datos)
     setPendientes(cambios.length)
+    setPedidosLocales(pedidos.length)
   }, [])
 
   useEffect(() => {
@@ -269,12 +279,15 @@ export default function App() {
     return (
       <PantallaPedido
         productos={productos}
-        onVolver={() => setPantalla({ tipo: 'lista' })}
-        onOk={(mensaje) => {
+        onVolver={() => {
+          void refrescar()
+          setPantalla({ tipo: 'lista' })
+        }}
+        onOk={async (mensaje) => {
+          await refrescar()
           setAviso({ texto: mensaje, tipo: 'ok' })
           setPantalla({ tipo: 'lista' })
         }}
-        onError={(mensaje) => setAviso({ texto: mensaje, tipo: 'error' })}
       />
     )
   }
@@ -287,11 +300,12 @@ export default function App() {
           <small>
             {productos.length} productos
             {pendientes > 0 ? ` · ${pendientes} cambios pendientes` : ' · sincronizado local'}
+            {pedidosLocales > 0 ? ` · ${pedidosLocales} pedido${pedidosLocales === 1 ? '' : 's'} por enviar` : ''}
           </small>
         </div>
         <div className="acciones-barra">
           <button type="button" className="boton fantasma" onClick={() => setPantalla({ tipo: 'pedido' })}>
-            Pedido
+            Pedido{pedidosLocales > 0 ? ` (${pedidosLocales})` : ''}
           </button>
           <button type="button" className="boton fantasma" onClick={() => setPantalla({ tipo: 'sync' })}>
             Sync PC
@@ -451,7 +465,14 @@ function PantallaSync({
       const host = await aplicarHost(ip, true)
       if (!host) return
       const r = await sincronizarConPc({ host, reemplazarTodo })
-      await onOk(`Sync OK · ${r.productos} productos en la PC (${r.modo})`)
+      const pedidos = await enviarPedidosLocalesAPc(host)
+      const extra =
+        pedidos.enviados + pedidos.yaEstaban > 0
+          ? ` · ${pedidos.enviados + pedidos.yaEstaban} pedido(s) enviados al panel`
+          : pedidos.quedan > 0
+            ? ` · ${pedidos.quedan} pedido(s) no se pudieron enviar`
+            : ''
+      await onOk(`Sync OK · ${r.productos} productos en la PC (${r.modo})${extra}`)
     } catch (error) {
       onError(error instanceof Error ? error.message : 'Falló la sincronización')
     } finally {
@@ -533,46 +554,148 @@ function PantallaPedido({
   productos,
   onVolver,
   onOk,
-  onError,
 }: {
   productos: Producto[]
   onVolver: () => void
-  onOk: (mensaje: string) => void
-  onError: (mensaje: string) => void
+  onOk: (mensaje: string) => void | Promise<void>
 }) {
   const [texto, setTexto] = useState('')
   const [preview, setPreview] = useState<PedidoResuelto | null>(null)
   const [trabajando, setTrabajando] = useState(false)
-  const [estado, setEstado] = useState<string | null>(null)
+  const [cola, setCola] = useState<PedidoLocalPendiente[]>([])
+  const [avisoLocal, setAvisoLocal] = useState<{ texto: string; tipo: 'ok' | 'error' | 'info' } | null>(
+    null,
+  )
+
+  const refrescarCola = useCallback(async () => {
+    setCola(await leerPedidosLocales())
+  }, [])
+
+  useEffect(() => {
+    void refrescarCola()
+  }, [refrescarCola])
 
   const leer = () => {
+    setAvisoLocal(null)
     const resuelto = parsearPedido(texto, productos)
     setPreview(resuelto)
-    if (resuelto.errores.length) onError(resuelto.errores[0])
-    else setEstado(null)
+    if (resuelto.errores.length) {
+      setAvisoLocal({ texto: resuelto.errores[0], tipo: 'error' })
+    }
+  }
+
+  const guardarOffline = async () => {
+    if (!preview?.codigo || preview.errores.length) {
+      setAvisoLocal({ texto: 'Primero leé un código válido.', tipo: 'error' })
+      return
+    }
+    setTrabajando(true)
+    try {
+      const r = await guardarPedidoLocal(preview.codigo)
+      await refrescarCola()
+      setAvisoLocal({
+        texto: r.yaEstaba
+          ? `El pedido ${preview.codigo} ya estaba guardado offline.`
+          : `Pedido ${preview.codigo} guardado offline. Cuando haya WiFi con el panel, usá «Enviar pendientes».`,
+        tipo: 'info',
+      })
+      setTexto('')
+      setPreview(null)
+    } finally {
+      setTrabajando(false)
+    }
   }
 
   const enviar = async () => {
     if (!preview?.codigo || preview.errores.length) {
-      onError('Primero leé un código válido.')
+      setAvisoLocal({ texto: 'Primero leé un código válido.', tipo: 'error' })
       return
     }
     setTrabajando(true)
-    setEstado(null)
+    setAvisoLocal(null)
     try {
       const hostGuardado = await leerIpPc()
       if (!hostGuardado) {
-        onError('Configurá la IP de la PC en Sync PC antes de enviar.')
+        await guardarPedidoLocal(preview.codigo)
+        await refrescarCola()
+        setAvisoLocal({
+          texto: `Sin IP de la PC: el pedido quedó guardado offline. Configurá Sync PC y después «Enviar pendientes».`,
+          tipo: 'info',
+        })
+        setTexto('')
+        setPreview(null)
         return
       }
       const r = await enviarPedidoAPc(hostGuardado, preview.codigo)
-      onOk(
-        r.yaEstaba
-          ? `El pedido ${preview.codigo} ya estaba pendiente en el panel`
-          : `Pedido ${preview.codigo} enviado al panel · confirmá ahí para descontar`,
-      )
+      await refrescarCola()
+      if (r.yaEstaba) {
+        setAvisoLocal({
+          texto: `Este pedido (${preview.codigo}) ya está pendiente en el panel. No hace falta enviarlo de nuevo: confirmalo ahí.`,
+          tipo: 'info',
+        })
+        setTexto('')
+        setPreview(null)
+        return
+      }
+      await onOk(`Pedido ${preview.codigo} enviado al panel · confirmá ahí para descontar`)
     } catch (error) {
-      onError(error instanceof Error ? error.message : 'No se pudo enviar')
+      const textoError = error instanceof Error ? error.message : 'No se pudo enviar'
+      if (textoError.includes('ya fue confirmado')) {
+        setAvisoLocal({
+          texto: `Este pedido ya fue confirmado antes. No se puede enviar de nuevo.`,
+          tipo: 'error',
+        })
+      } else {
+        // Sin conexión / panel cerrado → queda en cola local
+        await guardarPedidoLocal(preview.codigo)
+        await refrescarCola()
+        setAvisoLocal({
+          texto: `Sin conexión con el panel: el pedido ${preview.codigo} quedó guardado offline. Cuando vuelva la WiFi, tocá «Enviar pendientes».`,
+          tipo: 'info',
+        })
+        setTexto('')
+        setPreview(null)
+      }
+    } finally {
+      setTrabajando(false)
+    }
+  }
+
+  const enviarCola = async () => {
+    if (!cola.length) {
+      setAvisoLocal({ texto: 'No hay pedidos offline pendientes.', tipo: 'info' })
+      return
+    }
+    setTrabajando(true)
+    setAvisoLocal(null)
+    try {
+      const hostGuardado = await leerIpPc()
+      if (!hostGuardado) {
+        setAvisoLocal({
+          texto: 'Configurá la IP de la PC en Sync PC antes de enviar.',
+          tipo: 'error',
+        })
+        return
+      }
+      const r = await enviarPedidosLocalesAPc(hostGuardado)
+      await refrescarCola()
+      if (r.quedan === 0 && r.fallidos.length === 0) {
+        await onOk(
+          `Se enviaron ${r.enviados + r.yaEstaban} pedido(s) al panel. Cola offline vacía.`,
+        )
+        return
+      }
+      setAvisoLocal({
+        texto: `Enviados: ${r.enviados + r.yaEstaban}. Quedan ${r.quedan} offline.${
+          r.fallidos[0] ? ` Error: ${r.fallidos[0].error}` : ''
+        }`,
+        tipo: r.quedan > 0 ? 'error' : 'ok',
+      })
+    } catch (error) {
+      setAvisoLocal({
+        texto: error instanceof Error ? error.message : 'No se pudo enviar la cola',
+        tipo: 'error',
+      })
     } finally {
       setTrabajando(false)
     }
@@ -583,7 +706,10 @@ function PantallaPedido({
       <header className="barra">
         <div>
           <h1>Pedido WhatsApp</h1>
-          <small>Pegá el mensaje, compará y enviá al panel</small>
+          <small>
+            Pegá el mensaje, compará y enviá al panel
+            {cola.length > 0 ? ` · ${cola.length} offline` : ''}
+          </small>
         </div>
         <button type="button" className="boton fantasma" onClick={onVolver}>
           Volver
@@ -591,7 +717,8 @@ function PantallaPedido({
       </header>
       <main className="contenido">
         <p className="aviso">
-          El stock se descuenta en la PC al confirmar. Acá solo revisás y mandás el pedido.
+          Sin WiFi podés guardar el pedido offline. Cuando conectes con el panel, enviá los
+          pendientes (también se mandan al hacer Sync PC).
         </p>
         <label className="campo">
           <span>Mensaje o código (#1x2,3x1)</span>
@@ -614,7 +741,19 @@ function PantallaPedido({
           >
             Enviar al panel
           </button>
+          <button
+            type="button"
+            className="boton bloque"
+            disabled={trabajando || !preview?.codigo || Boolean(preview.errores.length)}
+            onClick={() => void guardarOffline()}
+          >
+            Guardar offline
+          </button>
         </div>
+
+        {avisoLocal && (
+          <p className={`aviso ${avisoLocal.tipo === 'info' ? 'info' : avisoLocal.tipo}`}>{avisoLocal.texto}</p>
+        )}
 
         {preview && (
           <div className="aviso" style={{ marginTop: 14, whiteSpace: 'pre-wrap' }}>
@@ -635,7 +774,30 @@ function PantallaPedido({
             ].join('\n')}
           </div>
         )}
-        {estado && <p className="aviso">{estado}</p>}
+
+        {cola.length > 0 && (
+          <div className="pedido-cola">
+            <div className="pedido-cola-cab">
+              <strong>Pendientes offline ({cola.length})</strong>
+              <button
+                type="button"
+                className="boton oro"
+                disabled={trabajando}
+                onClick={() => void enviarCola()}
+              >
+                Enviar pendientes
+              </button>
+            </div>
+            <ul className="pedido-cola-lista">
+              {cola.map((p) => (
+                <li key={p.id}>
+                  <code>{p.codigo}</code>
+                  <small>{new Date(p.fecha).toLocaleString('es-AR')}</small>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </main>
     </div>
   )

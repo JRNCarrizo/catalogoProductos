@@ -164,6 +164,55 @@ export async function probarPc(host: string, puerto = 3847): Promise<{ productos
   return { productos: datos.productos ?? 0, servicio: datos.servicio || 'Panel PC' }
 }
 
+export type PedidoLocalPendiente = {
+  id: string
+  codigo: string
+  fecha: string
+}
+
+const CLAVE_PEDIDOS = 'colector:pedidos-pendientes'
+
+export async function leerPedidosLocales(): Promise<PedidoLocalPendiente[]> {
+  const { value } = await Preferences.get({ key: CLAVE_PEDIDOS })
+  if (!value) return []
+  try {
+    const lista = JSON.parse(value) as PedidoLocalPendiente[]
+    return Array.isArray(lista) ? lista : []
+  } catch {
+    return []
+  }
+}
+
+async function guardarPedidosLocales(lista: PedidoLocalPendiente[]): Promise<void> {
+  await Preferences.set({ key: CLAVE_PEDIDOS, value: JSON.stringify(lista) })
+}
+
+/** Guarda un pedido en el celu (offline). Si el mismo código ya estaba, no duplica. */
+export async function guardarPedidoLocal(codigo: string): Promise<{ yaEstaba: boolean; lista: PedidoLocalPendiente[] }> {
+  const limpio = codigo.trim()
+  const lista = await leerPedidosLocales()
+  if (lista.some((p) => p.codigo === limpio)) {
+    return { yaEstaba: true, lista }
+  }
+  lista.push({
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    codigo: limpio,
+    fecha: new Date().toISOString(),
+  })
+  await guardarPedidosLocales(lista)
+  return { yaEstaba: false, lista }
+}
+
+export async function quitarPedidoLocal(codigo: string): Promise<PedidoLocalPendiente[]> {
+  const lista = (await leerPedidosLocales()).filter((p) => p.codigo !== codigo.trim())
+  await guardarPedidosLocales(lista)
+  return lista
+}
+
+export async function vaciarPedidosLocales(): Promise<void> {
+  await Preferences.set({ key: CLAVE_PEDIDOS, value: '[]' })
+}
+
 /** Envía el código de pedido al panel (queda pendiente; no descuenta stock). */
 export async function enviarPedidoAPc(host: string, texto: string, puerto = 3847): Promise<{ yaEstaba: boolean }> {
   const limpio = host.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')
@@ -178,7 +227,40 @@ export async function enviarPedidoAPc(host: string, texto: string, puerto = 3847
     throw new Error(datos.error || `No se pudo enviar el pedido (HTTP ${respuesta.status})`)
   }
   await guardarIpPc(limpio)
+  // Si estaba en la cola offline del celu, ya no hace falta.
+  await quitarPedidoLocal(texto.trim())
   return { yaEstaba: Boolean(datos.yaEstaba) }
+}
+
+/** Intenta mandar todos los pedidos guardados en el celu. Los exitosos se borran de la cola. */
+export async function enviarPedidosLocalesAPc(
+  host: string,
+  puerto = 3847,
+): Promise<{ enviados: number; yaEstaban: number; fallidos: { codigo: string; error: string }[]; quedan: number }> {
+  const lista = await leerPedidosLocales()
+  let enviados = 0
+  let yaEstaban = 0
+  const fallidos: { codigo: string; error: string }[] = []
+
+  for (const pedido of lista) {
+    try {
+      const r = await enviarPedidoAPc(host, pedido.codigo, puerto)
+      if (r.yaEstaba) yaEstaban += 1
+      else enviados += 1
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Error'
+      // Si ya fue confirmado en el panel, no tiene sentido dejarlo en la cola local.
+      if (msg.includes('ya fue confirmado')) {
+        await quitarPedidoLocal(pedido.codigo)
+        yaEstaban += 1
+      } else {
+        fallidos.push({ codigo: pedido.codigo, error: msg })
+      }
+    }
+  }
+
+  const quedan = (await leerPedidosLocales()).length
+  return { enviados, yaEstaban, fallidos, quedan }
 }
 
 export async function exportarJson(catalogo: Catalogo): Promise<string> {

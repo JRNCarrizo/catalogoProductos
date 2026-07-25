@@ -138,6 +138,56 @@ textarea {
   margin-bottom: 8px;
 }
 
+.pedido-cola {
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--borde);
+  background: var(--panel);
+}
+
+.pedido-cola-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.pedido-cola-cab strong {
+  color: var(--crema);
+  font-size: 0.95rem;
+}
+
+.pedido-cola-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pedido-cola-lista li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.pedido-cola-lista code {
+  color: var(--oro);
+  font-size: 0.9rem;
+}
+
+.pedido-cola-lista small {
+  color: var(--humo);
+  font-size: 0.75rem;
+}
+
 .buscador {
   width: 100%;
   margin-bottom: 12px;
@@ -276,6 +326,11 @@ textarea {
 .aviso.ok {
   border-color: rgba(37, 211, 102, 0.4);
   color: #a9f0c6;
+}
+
+.aviso.info {
+  border-color: rgba(212, 175, 83, 0.45);
+  color: #e8d5a3;
 }
 
 .aviso.error {
