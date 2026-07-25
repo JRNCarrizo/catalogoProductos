@@ -2,12 +2,14 @@ const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron')
 const { execFile } = require('node:child_process')
 const fs = require('node:fs/promises')
 const path = require('node:path')
+const { crearServidorSync } = require('./sync-server.cjs')
 
 const raizProyecto = path.join(__dirname, '..')
 const rutaCatalogo = path.join(raizProyecto, 'public', 'data', 'productos.json')
 const carpetaImagenes = path.join(raizProyecto, 'public', 'img')
 
 let ventana = null
+let sync = null
 
 function crearVentana() {
   ventana = new BrowserWindow({
@@ -27,7 +29,22 @@ function crearVentana() {
   ventana.loadFile(path.join(__dirname, 'ui', 'index.html'))
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  sync = crearServidorSync({
+    rutaCatalogo,
+    onSync: (catalogo) => {
+      if (ventana && !ventana.isDestroyed()) {
+        ventana.webContents.send('catalogo:desde-celular', catalogo)
+      }
+    },
+  })
+
+  try {
+    await sync.iniciar()
+  } catch (error) {
+    console.error('No se pudo iniciar el servidor de sync:', error)
+  }
+
   crearVentana()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) crearVentana()
@@ -36,6 +53,10 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
+})
+
+app.on('before-quit', () => {
+  void sync?.detener()
 })
 
 /** Ejecuta un comando en la raíz del proyecto y devuelve su salida combinada. */
@@ -87,6 +108,14 @@ ipcMain.handle('imagen:elegir', async (_evento, idProducto) => {
 
 ipcMain.handle('sitio:vistaPrevia', async () => {
   await shell.openExternal('http://localhost:5173')
+})
+
+ipcMain.handle('sync:estado', async () => {
+  return {
+    activo: Boolean(sync),
+    puerto: sync?.puerto ?? 3847,
+    ips: sync?.ips() ?? [],
+  }
 })
 
 ipcMain.handle('sitio:publicar', async (_evento, mensaje) => {

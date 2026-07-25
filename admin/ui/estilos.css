@@ -174,6 +174,10 @@ textarea {
 }
 
 #lista-productos li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   padding: 10px 12px;
   border-radius: 10px;
   cursor: pointer;
@@ -189,10 +193,16 @@ textarea {
   border-color: rgba(212, 175, 83, 0.4);
 }
 
+#lista-productos .info {
+  min-width: 0;
+  flex: 1;
+}
+
 #lista-productos .nombre {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 13px;
 }
 
 #lista-productos .meta {
@@ -200,6 +210,59 @@ textarea {
   color: var(--humo);
   font-size: 12px;
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stock-control {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--noche);
+  padding: 2px;
+}
+
+.stock-control.sin-stock-activo {
+  border-color: rgba(163, 43, 64, 0.55);
+}
+
+.stock-btn {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--crema);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.stock-btn:hover:not(:disabled) {
+  background: var(--panel-alto);
+  color: var(--oro);
+}
+
+.stock-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.stock-cantidad {
+  min-width: 28px;
+  text-align: center;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--oro);
+  font-weight: 600;
+}
+
+.stock-control.sin-stock-activo .stock-cantidad {
+  color: #e0899a;
 }
 
 .marca-destacado {
@@ -218,6 +281,18 @@ textarea {
   border-top: 1px solid var(--borde);
   color: var(--humo);
   font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pie-lista p {
+  margin: 0;
+}
+
+.sync-info {
+  color: var(--oro);
+  word-break: break-all;
 }
 
 .editor {

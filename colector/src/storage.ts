@@ -1,0 +1,148 @@
+import { Preferences } from '@capacitor/preferences'
+import type { CambioPendiente, Catalogo, Producto } from './types'
+import { productoVacio } from './types'
+
+const CLAVE_CATALOGO = 'colector:catalogo'
+const CLAVE_CAMBIOS = 'colector:cambios'
+
+const vacio = (): Catalogo => ({
+  actualizado: new Date().toISOString(),
+  moneda: 'ARS',
+  productos: [],
+})
+
+function normalizar(catalogo: Catalogo): Catalogo {
+  return {
+    actualizado: catalogo.actualizado || new Date().toISOString(),
+    moneda: catalogo.moneda || 'ARS',
+    productos: (catalogo.productos || []).map((producto) =>
+      productoVacio({
+        ...producto,
+        codigoBarras: producto.codigoBarras ?? '',
+        notas: producto.notas ?? [],
+      }),
+    ),
+  }
+}
+
+export async function leerCatalogo(): Promise<Catalogo> {
+  const { value } = await Preferences.get({ key: CLAVE_CATALOGO })
+  if (!value) return vacio()
+  try {
+    return normalizar(JSON.parse(value) as Catalogo)
+  } catch {
+    return vacio()
+  }
+}
+
+export async function guardarCatalogo(catalogo: Catalogo): Promise<Catalogo> {
+  const siguiente = {
+    ...catalogo,
+    actualizado: new Date().toISOString(),
+  }
+  await Preferences.set({ key: CLAVE_CATALOGO, value: JSON.stringify(siguiente) })
+  return siguiente
+}
+
+export async function leerCambios(): Promise<CambioPendiente[]> {
+  const { value } = await Preferences.get({ key: CLAVE_CAMBIOS })
+  if (!value) return []
+  try {
+    return JSON.parse(value) as CambioPendiente[]
+  } catch {
+    return []
+  }
+}
+
+async function guardarCambios(cambios: CambioPendiente[]): Promise<void> {
+  await Preferences.set({ key: CLAVE_CAMBIOS, value: JSON.stringify(cambios) })
+}
+
+export async function registrarCambio(
+  tipo: CambioPendiente['tipo'],
+  producto: Producto | null,
+  productoId: string,
+): Promise<void> {
+  const cambios = await leerCambios()
+  cambios.push({
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    tipo,
+    productoId,
+    producto,
+    fecha: new Date().toISOString(),
+  })
+  await guardarCambios(cambios)
+}
+
+export async function importarCatalogoRemoto(url: string): Promise<Catalogo> {
+  const respuesta = await fetch(`${url}?v=${Date.now()}`)
+  if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`)
+  const datos = (await respuesta.json()) as Catalogo
+  const catalogo = normalizar(datos)
+  await Preferences.set({ key: CLAVE_CATALOGO, value: JSON.stringify(catalogo) })
+  // Al importar desde la web, la cola local se reinicia: es el punto de partida.
+  await Preferences.set({ key: CLAVE_CAMBIOS, value: '[]' })
+  return catalogo
+}
+
+export async function vaciarCambios(): Promise<void> {
+  await Preferences.set({ key: CLAVE_CAMBIOS, value: '[]' })
+}
+
+const CLAVE_PC = 'colector:ip-pc'
+
+export async function leerIpPc(): Promise<string> {
+  const { value } = await Preferences.get({ key: CLAVE_PC })
+  return value || ''
+}
+
+export async function guardarIpPc(ip: string): Promise<void> {
+  await Preferences.set({ key: CLAVE_PC, value: ip.trim() })
+}
+
+export async function sincronizarConPc(opciones: {
+  host: string
+  puerto?: number
+  reemplazarTodo?: boolean
+}): Promise<{ productos: number; modo: string }> {
+  const host = opciones.host.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')
+  const puerto = opciones.puerto ?? 3847
+  const base = `http://${host.includes(':') ? host : `${host}:${puerto}`}`
+
+  const [catalogo, cambios] = await Promise.all([leerCatalogo(), leerCambios()])
+
+  const cuerpo = opciones.reemplazarTodo
+    ? { reemplazarTodo: true, catalogo }
+    : cambios.length > 0
+      ? { cambios, catalogo }
+      : { catalogo }
+
+  const respuesta = await fetch(`${base}/api/sync`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cuerpo),
+  })
+
+  const datos = (await respuesta.json()) as { ok: boolean; error?: string; productos?: number; modo?: string }
+  if (!respuesta.ok || !datos.ok) {
+    throw new Error(datos.error || `No se pudo sincronizar (HTTP ${respuesta.status})`)
+  }
+
+  await vaciarCambios()
+  await guardarIpPc(host.split(':')[0])
+  return { productos: datos.productos ?? catalogo.productos.length, modo: datos.modo || 'ok' }
+}
+
+export async function probarPc(host: string, puerto = 3847): Promise<{ productos: number; servicio: string }> {
+  const limpio = host.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')
+  const base = `http://${limpio.includes(':') ? limpio : `${limpio}:${puerto}`}`
+  const respuesta = await fetch(`${base}/api/estado`)
+  if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`)
+  const datos = (await respuesta.json()) as { ok: boolean; productos?: number; servicio?: string }
+  if (!datos.ok) throw new Error('El panel no respondió bien')
+  return { productos: datos.productos ?? 0, servicio: datos.servicio || 'Panel PC' }
+}
+
+export async function exportarJson(catalogo: Catalogo): Promise<string> {
+  return JSON.stringify(catalogo, null, 2)
+}

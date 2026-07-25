@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "panel": "electron admin/main.cjs",
+    "colector": "npm run dev --prefix colector",
+    "colector:android": "npm run android --prefix colector",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"

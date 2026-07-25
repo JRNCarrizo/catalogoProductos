@@ -30,7 +30,10 @@
           <button id="btn-nuevo" class="boton compacto" type="button">+ Nuevo</button>
         </div>
         <ul id="lista-productos"></ul>
-        <p class="pie-lista"><span id="contador">0</span> etiquetas cargadas</p>
+        <div class="pie-lista">
+          <p><span id="contador">0</span> etiquetas cargadas</p>
+          <p class="sync-info" id="sync-info">Sync WiFi: iniciando…</p>
+        </div>
       </section>
 
       <section class="editor" id="editor">
@@ -101,6 +104,11 @@
             <label class="campo">
               <span>Stock (botellas)</span>
               <input name="stock" type="number" min="0" step="1" placeholder="12" />
+            </label>
+
+            <label class="campo">
+              <span>Código de barras</span>
+              <input name="codigoBarras" placeholder="EAN / código de la botella" />
             </label>
 
             <label class="campo">

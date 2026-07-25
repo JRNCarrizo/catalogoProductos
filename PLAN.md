@@ -108,14 +108,18 @@ CELULAR (APK Capacitor)              PC (Electron)               WEB
 ─────────────────────────           ─────────────────           ─────────
 Colector de productos:        sync  Recibe cambios,      push   Catálogo
 alta/edición, escáner,       ────►  revisa/ajusta,      ────►   online
-funciona OFFLINE                    botón "Actualizar web"      (Netlify)
+funciona OFFLINE              WiFi  botón "Publicar"            (Netlify)
 ```
 
 - El celular es el **colector**: crea y actualiza productos sin depender de nube.
 - **Offline primero**: guarda local y mantiene una **cola de cambios pendientes**.
-- **Sincroniza con la PC** cuando hay conexión (idea principal: misma red WiFi;
-  la app de escritorio expone un endpoint local que recibe la sync).
-- La PC sigue siendo quien **publica** la web (git push, como hoy).
+- **Sync celu → PC por WiFi (implementado):**
+  - El panel Electron abre un servidor HTTP en el puerto **3847**.
+  - Muestra la IP local abajo a la izquierda (ej. `192.168.0.15:3847`).
+  - En la APK: **Sync PC** → pegás la IP → **Enviar cambios**.
+  - La PC fusiona los cambios en `public/data/productos.json` y refresca el panel.
+  - Después: **Publicar** en la PC para subir a Netlify.
+- Misma WiFi obligatoria. Si Windows bloquea, permitir Node/Electron en el firewall.
 
 ### 4.2 Preparado para nube (etapa 2, si se quiere escalar o dárselo a terceros)
 
@@ -146,9 +150,12 @@ funciona OFFLINE                    botón "Actualizar web"      (Netlify)
 ### 4.4 Orden de construcción acordado
 
 1. (Ya hecho) Catálogo web + panel PC.
-2. Publicar la web online (Netlify) con datos reales de Jorge.
-3. APK admin (Capacitor): alta/edición de productos, guardado offline.
-4. Escáner de código de barras (flujo de 4.3).
+2. (Ya hecho) Publicar la web online (Netlify: `vinosderemate.netlify.app`).
+3. (En curso) APK admin (Capacitor) en carpeta `colector/`:
+   alta/edición, stock +/−, offline, cola de cambios, importar desde la web,
+   escáner con flujo de cosechas. Probar con `npm run colector` o generar APK
+   con Android Studio (`cd colector && npm run android`).
+4. Escáner en dispositivo real + pulir UX.
 5. Cola de cambios pendientes + sync celu → PC por WiFi.
 6. (Opcional futuro) Nube + login para independizarse de la PC y/o dar el
    sistema a terceros. Recomendación: Supabase.
@@ -186,7 +193,10 @@ README.md               Instrucciones de uso e instalación
 
 ## 7. Pendientes inmediatos
 
-- [ ] Conectar el repo a Netlify y elegir subdominio (ej. `vinosderemate`).
-- [ ] Poner WhatsApp real y datos de contacto en `src/config/sitio.ts`.
-- [ ] Reemplazar los 8 productos de ejemplo por los vinos reales (desde el panel).
-- [ ] Decidir cuándo arrancar la APK (punto 4.4, paso 3).
+- [x] Conectar el repo a Netlify y elegir subdominio (`vinosderemate.netlify.app`).
+- [x] Poner WhatsApp real en `src/config/sitio.ts`.
+- [ ] Publicar WhatsApp + sync + colector a GitHub/Netlify.
+- [ ] Reemplazar productos de ejemplo por vinos reales.
+- [x] Arrancar APK colectora (`colector/`) con offline + escáner.
+- [x] Sync celu → PC por WiFi (puerto 3847).
+- [ ] Instalar APK actualizada en el celular y probar sync.

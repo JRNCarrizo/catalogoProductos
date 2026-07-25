@@ -19,8 +19,13 @@
       "destacado": true,
       "imagen": "",
       "descripcion": "Malbec de Mendoza.",
-      "notas": ["Fruta negra", "Especias", "Cacao"],
-      "maridaje": "Asado, pasta"
+      "notas": [
+        "Fruta negra",
+        "Especias",
+        "Cacao"
+      ],
+      "maridaje": "Asado, pasta",
+      "codigoBarras": ""
     },
     {
       "id": "catena-cabernet-2020",
@@ -34,13 +39,18 @@
       "precioAnterior": 19800,
       "precioCaja": null,
       "volumenMl": 750,
-      "graduacion": 14.0,
+      "graduacion": 14,
       "stock": 3,
       "destacado": true,
       "imagen": "",
       "descripcion": "Cabernet estructurado.",
-      "notas": ["Cassis", "Pimiento", "Roble"],
-      "maridaje": "Carnes rojas"
+      "notas": [
+        "Cassis",
+        "Pimiento",
+        "Roble"
+      ],
+      "maridaje": "Carnes rojas",
+      "codigoBarras": ""
     },
     {
       "id": "dv-catena-malbec-malbec",
@@ -59,8 +69,13 @@
       "destacado": true,
       "imagen": "",
       "descripcion": "Alta gama.",
-      "notas": ["Ciruela", "Violetas", "Café"],
-      "maridaje": "Cortes premium"
+      "notas": [
+        "Ciruela",
+        "Violetas",
+        "Café"
+      ],
+      "maridaje": "Cortes premium",
+      "codigoBarras": ""
     },
     {
       "id": "alamos-malbec-2022",
@@ -79,8 +94,12 @@
       "destacado": false,
       "imagen": "",
       "descripcion": "Ideal para todos los días.",
-      "notas": ["Frutos rojos", "Vainilla suave"],
-      "maridaje": "Picada, pizza"
+      "notas": [
+        "Frutos rojos",
+        "Vainilla suave"
+      ],
+      "maridaje": "Picada, pizza",
+      "codigoBarras": ""
     },
     {
       "id": "alamos-chardonnay-2023",
@@ -94,13 +113,17 @@
       "precioAnterior": 7200,
       "precioCaja": 3600,
       "volumenMl": 750,
-      "graduacion": 13.0,
+      "graduacion": 13,
       "stock": 10,
       "destacado": false,
       "imagen": "",
       "descripcion": "Blanco fresco.",
-      "notas": ["Manzana", "Cítricos"],
-      "maridaje": "Pescado, pollo"
+      "notas": [
+        "Manzana",
+        "Cítricos"
+      ],
+      "maridaje": "Pescado, pollo",
+      "codigoBarras": ""
     },
     {
       "id": "trivento-reserve-malbec",
@@ -119,8 +142,12 @@
       "destacado": false,
       "imagen": "",
       "descripcion": "Malbec reserva.",
-      "notas": ["Mora", "Especias dulces"],
-      "maridaje": "Asado"
+      "notas": [
+        "Mora",
+        "Especias dulces"
+      ],
+      "maridaje": "Asado",
+      "codigoBarras": ""
     },
     {
       "id": "norton-cosecha-tardia",
@@ -139,8 +166,12 @@
       "destacado": false,
       "imagen": "",
       "descripcion": "Botella de 500 ml.",
-      "notas": ["Miel", "Damasco"],
-      "maridaje": "Postres"
+      "notas": [
+        "Miel",
+        "Damasco"
+      ],
+      "maridaje": "Postres",
+      "codigoBarras": ""
     },
     {
       "id": "espumante-extra-brut",
@@ -154,13 +185,17 @@
       "precioAnterior": 14500,
       "precioCaja": null,
       "volumenMl": 750,
-      "graduacion": 12.0,
+      "graduacion": 12,
       "stock": 5,
       "destacado": true,
       "imagen": "",
       "descripcion": "Espumante para brindis.",
-      "notas": ["Manzana verde", "Pan tostado"],
-      "maridaje": "Aperitivo"
+      "notas": [
+        "Manzana verde",
+        "Pan tostado"
+      ],
+      "maridaje": "Aperitivo",
+      "codigoBarras": ""
     }
   ]
 }

@@ -18,6 +18,8 @@ export interface Producto {
   graduacion: number | null
   stock: number
   destacado: boolean
+  /** Código de barras / EAN. Varios productos (cosechas) pueden compartir el mismo. */
+  codigoBarras: string
   /** URL o ruta relativa de la foto. Vacío muestra una etiqueta ilustrada. */
   imagen: string
   descripcion: string

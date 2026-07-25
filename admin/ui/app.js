@@ -5,6 +5,7 @@ const elementos = {
   punto: $('.punto'),
   lista: $('#lista-productos'),
   contador: $('#contador'),
+  syncInfo: $('#sync-info'),
   buscador: $('#buscador'),
   formulario: $('#formulario'),
   editorVacio: $('#editor-vacio'),
@@ -38,6 +39,7 @@ const productoVacio = () => ({
   graduacion: null,
   stock: 0,
   destacado: false,
+  codigoBarras: '',
   imagen: '',
   descripcion: '',
   notas: [],
@@ -78,6 +80,22 @@ function productoActual() {
   return estado.catalogo.productos.find((producto) => producto.id === estado.seleccionId) ?? null
 }
 
+function ajustarStock(id, delta) {
+  const producto = estado.catalogo.productos.find((item) => item.id === id)
+  if (!producto) return
+
+  const actual = Number(producto.stock) || 0
+  producto.stock = Math.max(0, actual + delta)
+  marcarSucio(true)
+
+  // Si ese producto está abierto en el editor, sincronizamos el campo.
+  if (estado.seleccionId === id) {
+    elementos.formulario.elements.stock.value = producto.stock
+  }
+
+  dibujarLista()
+}
+
 function dibujarLista() {
   const termino = elementos.buscador.value.trim().toLowerCase()
   const visibles = estado.catalogo.productos.filter((producto) =>
@@ -93,6 +111,9 @@ function dibujarLista() {
     item.dataset.id = producto.id
     if (producto.id === estado.seleccionId) item.classList.add('activo')
 
+    const info = document.createElement('div')
+    info.className = 'info'
+
     const nombre = document.createElement('div')
     nombre.className = 'nombre'
     nombre.textContent = producto.nombre || 'Sin nombre'
@@ -102,12 +123,6 @@ function dibujarLista() {
       estrella.textContent = '★'
       nombre.append(estrella)
     }
-    if (Number(producto.stock) <= 0) {
-      const sinStock = document.createElement('span')
-      sinStock.className = 'sin-stock'
-      sinStock.textContent = 'sin stock'
-      nombre.append(sinStock)
-    }
 
     const meta = document.createElement('span')
     meta.className = 'meta'
@@ -115,7 +130,42 @@ function dibujarLista() {
       .filter(Boolean)
       .join(' · ')
 
-    item.append(nombre, meta)
+    info.append(nombre, meta)
+
+    const stock = document.createElement('div')
+    stock.className = 'stock-control'
+    if (Number(producto.stock) <= 0) stock.classList.add('sin-stock-activo')
+
+    const btnMenos = document.createElement('button')
+    btnMenos.type = 'button'
+    btnMenos.className = 'stock-btn'
+    btnMenos.textContent = '−'
+    btnMenos.title = 'Quitar una unidad'
+    btnMenos.setAttribute('aria-label', `Bajar stock de ${producto.nombre || 'producto'}`)
+    btnMenos.disabled = Number(producto.stock) <= 0
+    btnMenos.addEventListener('click', (evento) => {
+      evento.stopPropagation()
+      ajustarStock(producto.id, -1)
+    })
+
+    const cantidad = document.createElement('span')
+    cantidad.className = 'stock-cantidad'
+    cantidad.textContent = String(Number(producto.stock) || 0)
+
+    const btnMas = document.createElement('button')
+    btnMas.type = 'button'
+    btnMas.className = 'stock-btn'
+    btnMas.textContent = '+'
+    btnMas.title = 'Sumar una unidad'
+    btnMas.setAttribute('aria-label', `Subir stock de ${producto.nombre || 'producto'}`)
+    btnMas.addEventListener('click', (evento) => {
+      evento.stopPropagation()
+      ajustarStock(producto.id, 1)
+    })
+
+    stock.append(btnMenos, cantidad, btnMas)
+
+    item.append(info, stock)
     item.addEventListener('click', () => seleccionar(producto.id))
     elementos.lista.append(item)
   }
@@ -155,6 +205,7 @@ function seleccionar(id) {
   campos.precioAnterior.value = producto.precioAnterior ?? ''
   campos.precioCaja.value = producto.precioCaja ?? ''
   campos.stock.value = producto.stock ?? 0
+  campos.codigoBarras.value = producto.codigoBarras ?? ''
   campos.volumenMl.value = producto.volumenMl ?? 750
   campos.graduacion.value = producto.graduacion ?? ''
   campos.descripcion.value = producto.descripcion ?? ''
@@ -187,6 +238,7 @@ function leerFormulario() {
   producto.precioAnterior = numeroOpcional(campos.precioAnterior.value)
   producto.precioCaja = numeroOpcional(campos.precioCaja.value)
   producto.stock = numeroOpcional(campos.stock.value) ?? 0
+  producto.codigoBarras = campos.codigoBarras.value.trim()
   producto.volumenMl = numeroOpcional(campos.volumenMl.value) ?? 750
   producto.graduacion = numeroOpcional(campos.graduacion.value)
   producto.descripcion = campos.descripcion.value.trim()
@@ -307,6 +359,33 @@ async function iniciar() {
     elementos.estadoArchivo.textContent = 'No se pudo leer productos.json'
     avisar(`Error al leer el catálogo: ${error.message}`, 'error')
   }
+
+  try {
+    const sync = await window.panel.estadoSync()
+    if (sync.ips?.length) {
+      elementos.syncInfo.textContent = `Sync WiFi listo · ${sync.ips.map((ip) => `${ip}:${sync.puerto}`).join(' · ')}`
+    } else {
+      elementos.syncInfo.textContent = `Sync WiFi en puerto ${sync.puerto} (sin IP de red detectada)`
+    }
+  } catch {
+    elementos.syncInfo.textContent = 'Sync WiFi no disponible'
+  }
+
+  window.panel.onCatalogoDesdeCelular((catalogo) => {
+    estado.catalogo = catalogo
+    marcarSucio(false)
+    if (estado.seleccionId) {
+      const sigue = estado.catalogo.productos.some((producto) => producto.id === estado.seleccionId)
+      if (sigue) seleccionar(estado.seleccionId)
+      else {
+        estado.seleccionId = null
+        elementos.formulario.classList.add('oculto')
+        elementos.editorVacio.classList.remove('oculto')
+      }
+    }
+    dibujarLista()
+    avisar(`Sincronizado desde el celular · ${catalogo.productos.length} productos`, 'exito')
+  })
 }
 
 elementos.formulario.addEventListener('input', leerFormulario)

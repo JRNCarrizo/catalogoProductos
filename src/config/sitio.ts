@@ -7,8 +7,8 @@ export const sitio = {
   lema: 'Buenos vinos · Buen precio',
 
   /** Número de WhatsApp en formato internacional, sin + ni espacios. */
-  whatsapp: '5490000000000',
-  whatsappVisible: '+54 9 000 000-0000',
+  whatsapp: '5491138332282',
+  whatsappVisible: '+54 9 11 3833-2282',
 
   email: '',
   ciudad: 'Argentina',
