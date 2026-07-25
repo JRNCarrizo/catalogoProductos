@@ -11,6 +11,7 @@ interface Props {
   abierto: boolean
   items: ItemCarrito[]
   total: number
+  catalogo: Producto[]
   onCerrar: () => void
   onDefinirCantidad: (producto: Producto, cantidad: number) => void
   onQuitar: (id: string) => void
@@ -21,6 +22,7 @@ export function PanelPedido({
   abierto,
   items,
   total,
+  catalogo,
   onCerrar,
   onDefinirCantidad,
   onQuitar,
@@ -151,7 +153,7 @@ export function PanelPedido({
               </div>
 
               <a
-                href={pedido(items, total)}
+                href={pedido(items, total, catalogo)}
                 target="_blank"
                 rel="noreferrer"
                 className="mt-3 flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-3.5 text-sm font-semibold text-[#062d16] transition hover:brightness-110"

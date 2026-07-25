@@ -130,6 +130,14 @@ textarea {
   padding: 14px 16px;
 }
 
+.pedido-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+  margin-bottom: 8px;
+}
+
 .buscador {
   width: 100%;
   margin-bottom: 12px;

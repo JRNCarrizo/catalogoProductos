@@ -6,7 +6,7 @@ const { spawnSync } = require('node:child_process')
 const fs = require('node:fs')
 const path = require('node:path')
 
-const raiz = path.join(__dirname, '..', 'colector')
+const raiz = path.resolve(__dirname, '..', 'colector')
 const android = path.join(raiz, 'android')
 const jbr = 'C:\\Program Files\\Android\\Android Studio\\jbr'
 const sdk = path.join(process.env.LOCALAPPDATA || '', 'Android', 'Sdk')
@@ -16,18 +16,20 @@ if (!fs.existsSync(path.join(jbr, 'bin', 'java.exe'))) {
   process.exit(1)
 }
 
-const localProps = path.join(android, 'local.properties')
-fs.writeFileSync(localProps, `sdk.dir=${sdk.replace(/\\/g, '\\\\')}\n`)
+fs.writeFileSync(path.join(android, 'local.properties'), `sdk.dir=${sdk.replace(/\\/g, '\\\\')}\n`)
 
 const env = {
   ...process.env,
   JAVA_HOME: jbr,
   ANDROID_HOME: sdk,
-  PATH: `${path.join(jbr, 'bin')};${process.env.PATH}`,
+  PATH: `${path.join(jbr, 'bin')}${path.delimiter}${process.env.PATH}`,
 }
 
-const gradlew = path.join(android, 'gradlew.bat')
-const build = spawnSync(gradlew, ['assembleDebug', '--no-daemon'], {
+const comando = process.platform === 'win32'
+  ? `"${path.join(android, 'gradlew.bat')}" assembleDebug --no-daemon`
+  : './gradlew assembleDebug --no-daemon'
+
+const build = spawnSync(comando, {
   cwd: android,
   env,
   stdio: 'inherit',

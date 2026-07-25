@@ -8,10 +8,11 @@ interface Props {
   producto: Producto
   enCarrito: number
   onAgregar: (producto: Producto) => void
+  onRestar: (producto: Producto) => void
   onVerDetalle: (producto: Producto) => void
 }
 
-export function TarjetaProducto({ producto, enCarrito, onAgregar, onVerDetalle }: Props) {
+export function TarjetaProducto({ producto, enCarrito, onAgregar, onRestar, onVerDetalle }: Props) {
   const sinStock = producto.stock <= 0
   const ultimasUnidades = !sinStock && producto.stock <= 6
   const enOferta = producto.precioAnterior !== null && producto.precioAnterior > producto.precio
@@ -89,15 +90,27 @@ export function TarjetaProducto({ producto, enCarrito, onAgregar, onVerDetalle }
             )}
           </div>
 
-          <button
-            type="button"
-            disabled={sinStock}
-            onClick={() => onAgregar(producto)}
-            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-vino-600 text-crema transition hover:bg-vino-500 disabled:cursor-not-allowed disabled:bg-noche-700 disabled:text-humo/50"
-            aria-label={`Agregar ${producto.nombre} al pedido`}
-          >
-            {enCarrito > 0 ? <span className="text-sm font-semibold">{enCarrito}</span> : <IconoCarrito className="size-5" />}
-          </button>
+          <div className="flex shrink-0 items-center gap-1.5">
+            {enCarrito > 0 && (
+              <button
+                type="button"
+                onClick={() => onRestar(producto)}
+                className="flex size-11 items-center justify-center rounded-full border border-white/15 bg-noche-850 text-lg text-crema transition hover:border-oro-400/40 hover:bg-noche-800"
+                aria-label={`Quitar una unidad de ${producto.nombre}`}
+              >
+                −
+              </button>
+            )}
+            <button
+              type="button"
+              disabled={sinStock}
+              onClick={() => onAgregar(producto)}
+              className="flex size-11 items-center justify-center rounded-full bg-vino-600 text-crema transition hover:bg-vino-500 disabled:cursor-not-allowed disabled:bg-noche-700 disabled:text-humo/50"
+              aria-label={`Agregar ${producto.nombre} al pedido`}
+            >
+              {enCarrito > 0 ? <span className="text-sm font-semibold">{enCarrito}</span> : <IconoCarrito className="size-5" />}
+            </button>
+          </div>
         </div>
 
         {ultimasUnidades && (

@@ -100,6 +100,27 @@ export async function guardarIpPc(ip: string): Promise<void> {
   await Preferences.set({ key: CLAVE_PC, value: ip.trim() })
 }
 
+/** Extrae host[:puerto] desde IP cruda, URL http o texto de QR. */
+export function parsearHostSync(entrada: string): string | null {
+  const bruto = entrada.trim()
+  if (!bruto) return null
+
+  try {
+    if (bruto.includes('://')) {
+      const url = new URL(bruto)
+      return url.port && url.port !== '3847' ? `${url.hostname}:${url.port}` : url.hostname
+    }
+  } catch {
+    // sigue con heurística
+  }
+
+  const limpio = bruto.replace(/^https?:\/\//i, '').replace(/\/.*$/, '')
+  if (/^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/.test(limpio) || limpio.includes('.')) {
+    return limpio
+  }
+  return null
+}
+
 export async function sincronizarConPc(opciones: {
   host: string
   puerto?: number
@@ -129,7 +150,7 @@ export async function sincronizarConPc(opciones: {
   }
 
   await vaciarCambios()
-  await guardarIpPc(host.split(':')[0])
+  await guardarIpPc(host.replace(/^https?:\/\//, '').replace(/\/$/, ''))
   return { productos: datos.productos ?? catalogo.productos.length, modo: datos.modo || 'ok' }
 }
 
@@ -141,6 +162,23 @@ export async function probarPc(host: string, puerto = 3847): Promise<{ productos
   const datos = (await respuesta.json()) as { ok: boolean; productos?: number; servicio?: string }
   if (!datos.ok) throw new Error('El panel no respondió bien')
   return { productos: datos.productos ?? 0, servicio: datos.servicio || 'Panel PC' }
+}
+
+/** Envía el código de pedido al panel (queda pendiente; no descuenta stock). */
+export async function enviarPedidoAPc(host: string, texto: string, puerto = 3847): Promise<{ yaEstaba: boolean }> {
+  const limpio = host.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')
+  const base = `http://${limpio.includes(':') ? limpio : `${limpio}:${puerto}`}`
+  const respuesta = await fetch(`${base}/api/pedido`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ texto, origen: 'celular' }),
+  })
+  const datos = (await respuesta.json()) as { ok: boolean; error?: string; yaEstaba?: boolean }
+  if (!respuesta.ok || !datos.ok) {
+    throw new Error(datos.error || `No se pudo enviar el pedido (HTTP ${respuesta.status})`)
+  }
+  await guardarIpPc(limpio)
+  return { yaEstaba: Boolean(datos.yaEstaba) }
 }
 
 export async function exportarJson(catalogo: Catalogo): Promise<string> {

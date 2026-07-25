@@ -17,13 +17,15 @@
       </div>
 
       <div class="acciones">
+        <button id="btn-pedidos" class="boton fantasma" type="button">Pedidos</button>
+        <button id="btn-sync" class="boton fantasma" type="button">Sync celular</button>
         <button id="btn-vista-previa" class="boton fantasma" type="button">Ver el sitio</button>
         <button id="btn-guardar" class="boton" type="button">Guardar cambios</button>
         <button id="btn-publicar" class="boton primario" type="button">Publicar</button>
       </div>
     </header>
 
-    <main class="cuerpo">
+    <main class="cuerpo" id="vista-catalogo">
       <section class="lista">
         <div class="lista-cabecera">
           <input id="buscador" type="search" placeholder="Buscar vino…" />
@@ -159,7 +161,116 @@
       </section>
     </main>
 
-    <div class="capa oculta" id="capa-publicar">
+    <section class="vista-pedidos oculto" id="vista-pedidos">
+      <div class="pedidos-top">
+        <div>
+          <p class="pedidos-eyebrow">Gestión</p>
+          <h1>Pedidos</h1>
+          <p class="pedidos-sub">
+            Pegá el WhatsApp, revisá el detalle y confirmá para descontar stock. El historial queda en esta PC.
+          </p>
+        </div>
+        <button type="button" id="btn-cerrar-pedidos" class="boton fantasma">← Volver al catálogo</button>
+      </div>
+
+      <nav class="pedidos-tabs" id="pedidos-tabs">
+        <button type="button" class="pedidos-tab activa" data-tab="nuevo">
+          Nuevo pedido
+        </button>
+        <button type="button" class="pedidos-tab" data-tab="pendientes">
+          Pendientes
+          <span class="pedidos-badge" id="pedido-count-pen">0</span>
+        </button>
+        <button type="button" class="pedidos-tab" data-tab="historial">
+          Historial
+          <span class="pedidos-badge suave" id="pedido-count-hist">0</span>
+        </button>
+      </nav>
+
+      <div class="pedidos-cuerpo">
+        <section class="pedidos-tab-panel activa" data-panel="nuevo">
+          <div class="pedidos-nuevo-grid" id="pedidos-nuevo-grid">
+            <aside class="pedidos-panel pedidos-ingreso">
+              <header class="pedidos-panel-cab">
+                <h2>Cargar pedido</h2>
+                <p>Pegá el mensaje completo de WhatsApp o solo el código <code>#1x2,3x1</code></p>
+              </header>
+
+              <label class="campo">
+                <span>Mensaje de WhatsApp</span>
+                <textarea id="pedido-texto" placeholder="Pegá acá el mensaje…"></textarea>
+              </label>
+
+              <div class="pedidos-acciones">
+                <button type="button" id="btn-pedido-leer" class="boton">Leer código</button>
+                <button type="button" id="btn-pedido-confirmar" class="boton primario" disabled>
+                  Confirmar y descontar
+                </button>
+              </div>
+            </aside>
+
+            <section class="pedidos-panel pedidos-preview-panel oculto" id="pedidos-preview-panel">
+              <header class="pedidos-panel-cab fila">
+                <div>
+                  <h2>Vista previa</h2>
+                  <p>Compará con el chat de WhatsApp antes de confirmar</p>
+                </div>
+                <strong id="pedido-preview-codigo" class="pedido-codigo">—</strong>
+              </header>
+
+              <div id="pedido-preview" class="pedido-preview"></div>
+
+              <div class="pedidos-preview-pie">
+                <span>Total del pedido</span>
+                <strong id="pedido-preview-total">—</strong>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="pedidos-tab-panel" data-panel="pendientes">
+          <div class="pedidos-panel pedidos-panel-full">
+            <header class="pedidos-panel-cab fila">
+              <div>
+                <h2>Pendientes</h2>
+                <p>Enviados desde el celular · esperan tu confirmación</p>
+              </div>
+            </header>
+            <ul id="pedido-pendientes" class="pedido-lista pedido-lista-amplia"></ul>
+          </div>
+        </section>
+
+        <section class="pedidos-tab-panel" data-panel="historial">
+          <div class="pedidos-panel pedidos-panel-full">
+            <header class="pedidos-panel-cab fila">
+              <div>
+                <h2>Historial</h2>
+                <p>Pedidos confirmados y anulados</p>
+              </div>
+            </header>
+            <ul id="pedido-historial" class="pedido-lista pedido-lista-amplia"></ul>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <div class="capa oculto" id="capa-sync">
+      <div class="modal modal-sync">
+        <h2>Sincronizar con el celular</h2>
+        <p class="ayuda">
+          Abrí la APK → Sync PC → Escaneá este QR (o escribí la IP una sola vez; queda guardada).
+        </p>
+        <div id="sync-endpoints" class="sync-endpoints"></div>
+        <p class="ayuda oculto" id="sync-ayuda-vacio">
+          No detecté una IP de red. Conectá la PC al WiFi y reiniciá el panel.
+        </p>
+        <div class="modal-acciones">
+          <button type="button" id="btn-cerrar-sync" class="boton primario">Listo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="capa oculto" id="capa-publicar">
       <div class="modal">
         <h2>Publicar catálogo</h2>
         <p class="ayuda">
@@ -167,7 +278,7 @@
         </p>
         <label class="campo">
           <span>Descripción del cambio</span>
-          <input id="mensaje-commit" value="Actualizo el catálogo" />
+          <input id="mensaje-commit" value="Actualizo el catalogo" />
         </label>
         <pre id="log-publicar" class="log oculto"></pre>
         <div class="modal-acciones">
@@ -179,6 +290,7 @@
 
     <div id="aviso" class="aviso oculto"></div>
 
+    <script src="pedido.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

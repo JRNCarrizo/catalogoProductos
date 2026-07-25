@@ -1,0 +1,100 @@
+{
+  "pendientes": [],
+  "historial": [
+    {
+      "id": "ped-1785016851925",
+      "codigo": "#3x2,2x1,8x4,7x1,1x1",
+      "fecha": "2026-07-25T22:00:51.925Z",
+      "estado": "confirmado",
+      "origen": "celular",
+      "total": 77800,
+      "items": [
+        {
+          "productoId": "dv-catena-malbec-malbec",
+          "indice": 3,
+          "nombre": "DV Catena Malbec Malbec 2019",
+          "cantidad": 2,
+          "precio": 14500
+        },
+        {
+          "productoId": "catena-cabernet-2020",
+          "indice": 2,
+          "nombre": "Catena Zapata Cabernet Sauvignon 2020",
+          "cantidad": 1,
+          "precio": 9200
+        },
+        {
+          "productoId": "espumante-extra-brut",
+          "indice": 8,
+          "nombre": "Bodega seleccionada Extra Brut",
+          "cantidad": 4,
+          "precio": 6800
+        },
+        {
+          "productoId": "norton-cosecha-tardia",
+          "indice": 7,
+          "nombre": "Norton Cosecha Tardía 2022",
+          "cantidad": 1,
+          "precio": 3500
+        },
+        {
+          "productoId": "catena-malbec-2021",
+          "indice": 1,
+          "nombre": "Catena Zapata Malbec 2021",
+          "cantidad": 1,
+          "precio": 8900
+        }
+      ],
+      "avisos": [
+        "Malbec Malbec: pedían 2, hay 0",
+        "Cabernet Sauvignon: pedían 1, hay 0"
+      ]
+    },
+    {
+      "id": "ped-1785015958059",
+      "codigo": "#3x2,2x1,1x5,8x1,7x1",
+      "fecha": "2026-07-25T21:45:58.059Z",
+      "estado": "confirmado",
+      "origen": "panel",
+      "total": 93000,
+      "items": [
+        {
+          "productoId": "dv-catena-malbec-malbec",
+          "indice": 3,
+          "nombre": "DV Catena Malbec Malbec 2019",
+          "cantidad": 2,
+          "precio": 14500
+        },
+        {
+          "productoId": "catena-cabernet-2020",
+          "indice": 2,
+          "nombre": "Catena Zapata Cabernet Sauvignon 2020",
+          "cantidad": 1,
+          "precio": 9200
+        },
+        {
+          "productoId": "catena-malbec-2021",
+          "indice": 1,
+          "nombre": "Catena Zapata Malbec 2021",
+          "cantidad": 5,
+          "precio": 8900
+        },
+        {
+          "productoId": "espumante-extra-brut",
+          "indice": 8,
+          "nombre": "Bodega seleccionada Extra Brut",
+          "cantidad": 1,
+          "precio": 6800
+        },
+        {
+          "productoId": "norton-cosecha-tardia",
+          "indice": 7,
+          "nombre": "Norton Cosecha Tardía 2022",
+          "cantidad": 1,
+          "precio": 3500
+        }
+      ],
+      "avisos": []
+    }
+  ]
+}

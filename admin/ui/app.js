@@ -6,6 +6,24 @@ const elementos = {
   lista: $('#lista-productos'),
   contador: $('#contador'),
   syncInfo: $('#sync-info'),
+  capaSync: $('#capa-sync'),
+  syncEndpoints: $('#sync-endpoints'),
+  syncAyudaVacio: $('#sync-ayuda-vacio'),
+  vistaCatalogo: $('#vista-catalogo'),
+  vistaPedidos: $('#vista-pedidos'),
+  btnPedidos: $('#btn-pedidos'),
+  pedidosTabs: $('#pedidos-tabs'),
+  pedidosNuevoGrid: $('#pedidos-nuevo-grid'),
+  pedidoTexto: $('#pedido-texto'),
+  pedidoPanelPreview: $('#pedidos-preview-panel'),
+  pedidoPreview: $('#pedido-preview'),
+  pedidoPreviewCodigo: $('#pedido-preview-codigo'),
+  pedidoPreviewTotal: $('#pedido-preview-total'),
+  pedidoPendientes: $('#pedido-pendientes'),
+  pedidoHistorial: $('#pedido-historial'),
+  pedidoCountPen: $('#pedido-count-pen'),
+  pedidoCountHist: $('#pedido-count-hist'),
+  btnPedidoConfirmar: $('#btn-pedido-confirmar'),
   buscador: $('#buscador'),
   formulario: $('#formulario'),
   editorVacio: $('#editor-vacio'),
@@ -22,6 +40,8 @@ const estado = {
   catalogo: { actualizado: '', moneda: 'ARS', productos: [] },
   seleccionId: null,
   sucio: false,
+  pedidos: { pendientes: [], historial: [] },
+  previewPedido: null,
 }
 
 const productoVacio = () => ({
@@ -337,7 +357,8 @@ async function publicar() {
   }
 
   elementos.logPublicar.textContent = 'Publicando…'
-  const resultado = await window.panel.publicar(elementos.mensajeCommit.value)
+  const mensaje = (elementos.mensajeCommit.value || 'Actualizo el catalogo').trim()
+  const resultado = await window.panel.publicar(mensaje)
   elementos.logPublicar.textContent = resultado.pasos
     .map(({ paso, salida }) => `› ${paso}\n${salida || 'ok'}`)
     .join('\n\n')
@@ -345,8 +366,293 @@ async function publicar() {
 
   if (resultado.ok) {
     avisar(resultado.sinCambios ? 'No había cambios para publicar' : 'Catálogo publicado', 'exito')
+    // Cerrar el modal: no tiene sentido dejarlo abierto para republicar lo mismo.
+    setTimeout(() => {
+      elementos.capaPublicar.classList.add('oculto')
+      elementos.logPublicar.classList.add('oculto')
+      elementos.logPublicar.textContent = ''
+    }, 900)
   } else {
     avisar('La publicación falló. Revisá el detalle.', 'error')
+  }
+}
+
+async function mostrarSync() {
+  elementos.capaSync.classList.remove('oculto')
+  elementos.syncEndpoints.innerHTML = ''
+  elementos.syncAyudaVacio.classList.add('oculto')
+
+  try {
+    const sync = await window.panel.estadoSync()
+    if (!sync.endpoints?.length) {
+      elementos.syncAyudaVacio.classList.remove('oculto')
+      elementos.syncInfo.textContent = `Sync WiFi en puerto ${sync.puerto} (sin IP de red)`
+      return
+    }
+
+    for (const endpoint of sync.endpoints) {
+      const caja = document.createElement('div')
+      caja.className = 'sync-endpoint'
+
+      const img = document.createElement('img')
+      img.src = endpoint.qr
+      img.alt = `QR sync ${endpoint.ip}`
+
+      const ip = document.createElement('div')
+      ip.className = 'ip'
+      ip.textContent = `${endpoint.ip}:${endpoint.puerto}`
+
+      const url = document.createElement('div')
+      url.className = 'url'
+      url.textContent = endpoint.url
+
+      caja.append(img, ip, url)
+      elementos.syncEndpoints.append(caja)
+    }
+
+    elementos.syncInfo.textContent = `Sync WiFi listo · tocá para ver el QR · ${sync.endpoints
+      .map((e) => `${e.ip}:${e.puerto}`)
+      .join(' · ')}`
+  } catch {
+    elementos.syncAyudaVacio.textContent = 'No se pudo obtener el estado de sync.'
+    elementos.syncAyudaVacio.classList.remove('oculto')
+  }
+}
+
+function ocultarPreviewPedido() {
+  estado.previewPedido = null
+  elementos.btnPedidoConfirmar.disabled = true
+  elementos.pedidoPanelPreview.classList.add('oculto')
+  elementos.pedidosNuevoGrid.classList.add('sin-preview')
+  elementos.pedidoPreview.innerHTML = ''
+  elementos.pedidoPreviewCodigo.textContent = '—'
+  elementos.pedidoPreviewTotal.textContent = '—'
+}
+
+function dibujarPreviewPedido(resuelto) {
+  estado.previewPedido = resuelto
+  elementos.btnPedidoConfirmar.disabled = !(resuelto?.codigo && resuelto.lineas.length && !resuelto.errores.length)
+
+  if (!resuelto?.codigo) {
+    ocultarPreviewPedido()
+    return
+  }
+
+  elementos.pedidoPanelPreview.classList.remove('oculto')
+  elementos.pedidosNuevoGrid.classList.remove('sin-preview')
+  elementos.pedidoPreviewCodigo.textContent = resuelto.codigo
+  elementos.pedidoPreviewTotal.textContent = formatearPesos(resuelto.total)
+
+  const lineasHtml = resuelto.lineas
+    .map((linea) => {
+      const nombre = linea.producto
+        ? etiquetaProducto(linea.producto)
+        : `Producto #${linea.indice} (no encontrado)`
+      const subtotal = linea.producto ? Number(linea.producto.precio || 0) * linea.cantidad : 0
+      const stock = linea.producto != null ? `Stock actual: ${linea.producto.stock}` : 'Sin stock en catálogo'
+      return `<div class="pedido-linea">
+        <span class="cant">${linea.cantidad}</span>
+        <div>
+          <div class="nombre">${nombre}</div>
+          <span class="stock-meta">${stock}</span>
+        </div>
+        <span class="subtotal">${formatearPesos(subtotal)}</span>
+      </div>`
+    })
+    .join('')
+
+  const alerta = resuelto.errores.length
+    ? `<div class="pedido-alerta">${resuelto.errores.join(' · ')}</div>`
+    : ''
+
+  elementos.pedidoPreview.innerHTML = `${lineasHtml}${alerta}`
+}
+
+function tarjetaPedido(item, opciones = {}) {
+  const li = document.createElement('li')
+  li.className = `pedido-card${item.estado === 'anulado' ? ' estado-anulado' : ''}`
+
+  const estadoLabel = opciones.pendiente
+    ? 'pendiente'
+    : item.estado === 'anulado'
+      ? 'anulado'
+      : 'confirmado'
+
+  const items = (item.items || [])
+    .map((i) => `<li>${i.cantidad} × ${i.nombre}</li>`)
+    .join('')
+
+  const info = document.createElement('div')
+  info.className = 'pedido-card-info'
+  info.innerHTML = `
+    <div class="pedido-card-top">
+      <span class="codigo">${item.codigo}</span>
+      <span class="total">${formatearPesos(item.total)}</span>
+      <span class="pedido-estado ${estadoLabel}">${estadoLabel}</span>
+    </div>
+    <ul class="pedido-items">${items || '<li>Sin ítems</li>'}</ul>
+    <div class="pedido-fecha">${new Date(item.fecha).toLocaleString('es-AR')}${
+      item.origen ? ` · ${item.origen}` : ''
+    }</div>
+  `
+
+  const acciones = document.createElement('div')
+  acciones.className = 'acciones-item'
+
+  if (opciones.pendiente) {
+    const btnOk = document.createElement('button')
+    btnOk.type = 'button'
+    btnOk.className = 'boton primario compacto'
+    btnOk.textContent = 'Confirmar'
+    btnOk.addEventListener('click', () => void confirmarDesdePendiente(item.id))
+
+    const btnNo = document.createElement('button')
+    btnNo.type = 'button'
+    btnNo.className = 'boton fantasma compacto'
+    btnNo.textContent = 'Descartar'
+    btnNo.addEventListener('click', () => void descartarPendienteUi(item.id))
+
+    acciones.append(btnOk, btnNo)
+  } else if (item.estado === 'confirmado') {
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.className = 'boton fantasma compacto'
+    btn.textContent = 'Anular'
+    btn.title = 'Devuelve el stock'
+    btn.addEventListener('click', () => void anularPedidoUi(item.id))
+    acciones.append(btn)
+  }
+
+  li.append(info, acciones)
+  return li
+}
+
+function dibujarPedidos() {
+  const { pendientes, historial } = estado.pedidos
+  elementos.pedidoCountPen.textContent = String(pendientes.length)
+  elementos.pedidoCountHist.textContent = String(historial.length)
+  elementos.pedidoPendientes.innerHTML = ''
+  elementos.pedidoHistorial.innerHTML = ''
+
+  if (!pendientes.length) {
+    const vacio = document.createElement('li')
+    vacio.className = 'meta-vacio'
+    vacio.textContent = 'No hay pendientes del celular.'
+    elementos.pedidoPendientes.append(vacio)
+  } else {
+    for (const item of pendientes) {
+      elementos.pedidoPendientes.append(tarjetaPedido(item, { pendiente: true }))
+    }
+  }
+
+  if (!historial.length) {
+    const vacio = document.createElement('li')
+    vacio.className = 'meta-vacio'
+    vacio.textContent = 'Todavía no hay pedidos confirmados.'
+    elementos.pedidoHistorial.append(vacio)
+  } else {
+    for (const item of historial.slice(0, 60)) {
+      elementos.pedidoHistorial.append(tarjetaPedido(item))
+    }
+  }
+}
+
+async function cargarPedidos() {
+  estado.pedidos = await window.panel.leerPedidos()
+  dibujarPedidos()
+}
+
+function enVistaPedidos() {
+  return !elementos.vistaPedidos.classList.contains('oculto')
+}
+
+function activarTabPedido(tab) {
+  for (const boton of elementos.pedidosTabs.querySelectorAll('.pedidos-tab')) {
+    boton.classList.toggle('activa', boton.dataset.tab === tab)
+  }
+  for (const panel of elementos.vistaPedidos.querySelectorAll('.pedidos-tab-panel')) {
+    panel.classList.toggle('activa', panel.dataset.panel === tab)
+  }
+}
+
+async function mostrarPedidos() {
+  elementos.vistaCatalogo.classList.add('oculto')
+  elementos.vistaPedidos.classList.remove('oculto')
+  elementos.btnPedidos.classList.add('activo-nav')
+  activarTabPedido('nuevo')
+  ocultarPreviewPedido()
+  await cargarPedidos()
+}
+
+function volverCatalogo() {
+  elementos.vistaPedidos.classList.add('oculto')
+  elementos.vistaCatalogo.classList.remove('oculto')
+  elementos.btnPedidos.classList.remove('activo-nav')
+}
+
+async function leerCodigoPedido() {
+  const texto = elementos.pedidoTexto.value
+  const resuelto = parsearPedido(texto, estado.catalogo.productos)
+  dibujarPreviewPedido(resuelto)
+  if (resuelto.errores.length) avisar(resuelto.errores[0], 'error')
+}
+
+async function confirmarPedidoPegado() {
+  try {
+    if (estado.sucio && !(await guardar())) return
+    const resultado = await window.panel.confirmarPedido({
+      texto: elementos.pedidoTexto.value,
+      origen: 'panel',
+    })
+    estado.catalogo = resultado.catalogo
+    estado.pedidos = resultado.pedidos
+    elementos.pedidoTexto.value = ''
+    ocultarPreviewPedido()
+    marcarSucio(false)
+    dibujarLista()
+    dibujarPedidos()
+    const extra = resultado.avisos?.length ? ` · ${resultado.avisos.join(' · ')}` : ''
+    avisar(`Pedido ${resultado.registro.codigo} confirmado${extra}`, 'exito')
+  } catch (error) {
+    avisar(error.message || 'No se pudo confirmar', 'error')
+  }
+}
+
+async function confirmarDesdePendiente(id) {
+  try {
+    if (estado.sucio && !(await guardar())) return
+    const resultado = await window.panel.confirmarPedido({ pendienteId: id, origen: 'celular' })
+    estado.catalogo = resultado.catalogo
+    estado.pedidos = resultado.pedidos
+    marcarSucio(false)
+    dibujarLista()
+    dibujarPedidos()
+    avisar(`Pedido ${resultado.registro.codigo} confirmado`, 'exito')
+  } catch (error) {
+    avisar(error.message || 'No se pudo confirmar', 'error')
+  }
+}
+
+async function descartarPendienteUi(id) {
+  if (!confirm('¿Descartar este pendiente sin descontar stock?')) return
+  estado.pedidos = await window.panel.descartarPendiente(id)
+  dibujarPedidos()
+  avisar('Pendiente descartado')
+}
+
+async function anularPedidoUi(id) {
+  if (!confirm('¿Anular y devolver el stock de este pedido?')) return
+  try {
+    if (estado.sucio && !(await guardar())) return
+    const resultado = await window.panel.anularPedido(id)
+    estado.catalogo = resultado.catalogo
+    estado.pedidos = resultado.pedidos
+    marcarSucio(false)
+    dibujarLista()
+    dibujarPedidos()
+    avisar('Pedido anulado · stock devuelto', 'exito')
+  } catch (error) {
+    avisar(error.message || 'No se pudo anular', 'error')
   }
 }
 
@@ -361,9 +667,17 @@ async function iniciar() {
   }
 
   try {
+    await cargarPedidos()
+  } catch {
+    // historial vacío al inicio está bien
+  }
+
+  try {
     const sync = await window.panel.estadoSync()
     if (sync.ips?.length) {
-      elementos.syncInfo.textContent = `Sync WiFi listo · ${sync.ips.map((ip) => `${ip}:${sync.puerto}`).join(' · ')}`
+      elementos.syncInfo.textContent = `Sync WiFi listo · tocá para ver el QR · ${sync.ips
+        .map((ip) => `${ip}:${sync.puerto}`)
+        .join(' · ')}`
     } else {
       elementos.syncInfo.textContent = `Sync WiFi en puerto ${sync.puerto} (sin IP de red detectada)`
     }
@@ -386,6 +700,16 @@ async function iniciar() {
     dibujarLista()
     avisar(`Sincronizado desde el celular · ${catalogo.productos.length} productos`, 'exito')
   })
+
+  window.panel.onPedidosActualizados((pedidos) => {
+    estado.pedidos = pedidos
+    dibujarPedidos()
+    if (enVistaPedidos()) {
+      avisar('Nuevo pedido pendiente del celular', 'exito')
+    } else {
+      avisar('Llegó un pedido del celular · abrí Pedidos', 'exito')
+    }
+  })
 }
 
 elementos.formulario.addEventListener('input', leerFormulario)
@@ -403,6 +727,17 @@ $('#btn-quitar-foto').addEventListener('click', () => {
   marcarSucio(true)
 })
 $('#btn-vista-previa').addEventListener('click', () => window.panel.vistaPrevia())
+$('#btn-pedidos').addEventListener('click', () => void mostrarPedidos())
+$('#btn-sync').addEventListener('click', () => void mostrarSync())
+elementos.syncInfo.addEventListener('click', () => void mostrarSync())
+$('#btn-cerrar-sync').addEventListener('click', () => elementos.capaSync.classList.add('oculto'))
+$('#btn-cerrar-pedidos').addEventListener('click', volverCatalogo)
+elementos.pedidosTabs.addEventListener('click', (evento) => {
+  const boton = evento.target.closest('.pedidos-tab')
+  if (boton) activarTabPedido(boton.dataset.tab)
+})
+$('#btn-pedido-leer').addEventListener('click', () => void leerCodigoPedido())
+elementos.btnPedidoConfirmar.addEventListener('click', () => void confirmarPedidoPegado())
 $('#btn-publicar').addEventListener('click', () => {
   elementos.logPublicar.classList.add('oculto')
   elementos.capaPublicar.classList.remove('oculto')

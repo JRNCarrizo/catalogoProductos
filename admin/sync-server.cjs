@@ -102,7 +102,7 @@ function fusionarCatalogo(catalogoPc, catalogoCel) {
 /**
  * Servidor HTTP local para que el celular sincronice el catálogo por WiFi.
  */
-function crearServidorSync({ rutaCatalogo, onSync }) {
+function crearServidorSync({ rutaCatalogo, rutaPedidos, onSync, onPedido }) {
   let servidor = null
 
   const manejar = async (req, res) => {
@@ -129,6 +129,21 @@ function crearServidorSync({ rutaCatalogo, onSync }) {
             ips: ipsLocales(),
           }),
         )
+        return
+      }
+
+      if (req.method === 'POST' && req.url === '/api/pedido') {
+        const { recibirPedidoPendiente } = require('./pedidos.cjs')
+        const cuerpo = await leerJson(req)
+        const resultado = await recibirPedidoPendiente({
+          rutaCatalogo,
+          rutaPedidos,
+          texto: cuerpo.texto || cuerpo.codigo || '',
+          origen: cuerpo.origen || 'celular',
+        })
+        if (typeof onPedido === 'function') onPedido(resultado.pedidos)
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
+        res.end(JSON.stringify({ ok: true, yaEstaba: resultado.yaEstaba, pedidos: resultado.pedidos }))
         return
       }
 

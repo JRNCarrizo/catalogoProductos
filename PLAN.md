@@ -44,7 +44,16 @@
   - **Carrito**: agregar NO abre el panel (se sigue navegando). Hay un
     **carrito flotante fijo abajo a la derecha** (cantidad + total + "Ver pedido").
     Botón WhatsApp flotante abajo a la izquierda.
-  - El pedido se envía armado por WhatsApp (`src/lib/whatsapp.ts`).
+  - El pedido se envía armado por WhatsApp (`src/lib/whatsapp.ts`)
+    con un **código corto** al final (`#3x2,7x1` = producto 3×2 + producto 7×1,
+    según el orden de `productos.json`).
+  - Confirmación de pedido (sin costo):
+    1. Cliente manda WhatsApp (texto legible + código).
+    2. Vos pegás el mensaje en el **panel → Pedidos** (o en la APK → Pedido
+       y “Enviar al panel”).
+    3. Comparás con el chat → **Confirmar** → se descuenta stock y queda en
+       el historial local (`admin/pedidos.json`).
+    4. **Publicar** para que la web muestre el stock nuevo.
     Sin campo de nota (se decidió quitarlo: el chat cumple ese rol).
   - Sin foto → se muestra una botella ilustrada SVG (`BotellaIlustrada.tsx`)
     coloreada según el tipo de vino.
@@ -157,25 +166,26 @@ funciona OFFLINE              WiFi  botón "Publicar"            (Netlify)
    con Android Studio (`cd colector && npm run android`).
 4. Escáner en dispositivo real + pulir UX.
 5. Cola de cambios pendientes + sync celu → PC por WiFi.
-6. (Opcional futuro) Nube + login para independizarse de la PC y/o dar el
+6. Pedidos: código corto en WhatsApp + confirmar en panel (historial local)
+   + envío pendiente desde la APK.
+7. (Opcional futuro) Nube + login para independizarse de la PC y/o dar el
    sistema a terceros. Recomendación: Supabase.
-7. (Ideas mencionadas, sin decidir) PDF exportable, Mercado Pago, dominio propio.
+8. (Ideas mencionadas, sin decidir) PDF exportable, Mercado Pago, dominio propio.
 
 ---
 
 ## 5. Estructura del repo
 
 ```
-admin/                  Panel de escritorio Electron (main.cjs, preload.cjs, ui/)
+admin/                  Panel de escritorio Electron (main.cjs, preload.cjs, ui/, pedidos)
+admin/pedidos.json      Historial y pendientes de pedidos (solo PC)
 public/data/productos.json   Fuente de verdad de los productos
 public/img/             Fotos de botellas (el panel las copia acá)
 src/config/sitio.ts     Marca, WhatsApp, textos (ÚNICO archivo a editar de marca)
-src/components/         UI del catálogo (Encabezado, Portada, Beneficios, Filtros,
-                        TarjetaProducto, DetalleProducto, PanelPedido,
-                        CarritoFlotante, PieDePagina, BotellaIlustrada, iconos)
-src/hooks/              useCatalogo (fetch JSON), useCarrito (localStorage),
-                        useSuperposicion (Escape + scroll lock)
-src/lib/                formato (precios es-AR), whatsapp (links wa.me), rutas (base path)
+src/components/         UI del catálogo
+src/hooks/              useCatalogo, useCarrito, useSuperposicion
+src/lib/                formato, whatsapp, pedidoCodigo (#nxq), rutas
+colector/               APK Capacitor (offline, escáner, sync, pedido→panel)
 netlify.toml            Deploy automático en Netlify
 Abrir panel.bat         Doble clic: levanta dev server + panel Electron
 PLAN.md                 Este documento
@@ -199,4 +209,6 @@ README.md               Instrucciones de uso e instalación
 - [ ] Reemplazar productos de ejemplo por vinos reales.
 - [x] Arrancar APK colectora (`colector/`) con offline + escáner.
 - [x] Sync celu → PC por WiFi (puerto 3847).
-- [ ] Instalar APK actualizada en el celular y probar sync.
+- [x] Pedidos: código corto WhatsApp + confirmar en panel + historial.
+- [ ] Instalar APK actualizada en el celular y probar sync / pedidos.
+- [ ] Publicar catálogo (con código en WhatsApp) a Netlify.

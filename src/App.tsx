@@ -77,6 +77,11 @@ export default function App() {
     carrito.agregar(producto)
   }
 
+  const restar = (producto: Producto) => {
+    const actual = carrito.cantidades.get(producto.id) ?? 0
+    carrito.definirCantidad(producto, actual - 1)
+  }
+
   return (
     <>
       <Encabezado unidades={carrito.unidades} onAbrirCarrito={() => setPedidoAbierto(true)} />
@@ -142,6 +147,7 @@ export default function App() {
                   producto={producto}
                   enCarrito={carrito.cantidades.get(producto.id) ?? 0}
                   onAgregar={agregar}
+                  onRestar={restar}
                   onVerDetalle={setDetalle}
                 />
               ))}
@@ -158,6 +164,7 @@ export default function App() {
         abierto={pedidoAbierto}
         items={carrito.items}
         total={carrito.total}
+        catalogo={productos}
         onCerrar={() => setPedidoAbierto(false)}
         onDefinirCantidad={carrito.definirCantidad}
         onQuitar={carrito.quitar}

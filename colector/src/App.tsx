@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { escanearCodigo } from './escaner'
 import {
+  enviarPedidoAPc,
   guardarCatalogo,
+  guardarIpPc,
   importarCatalogoRemoto,
   leerCambios,
   leerCatalogo,
   leerIpPc,
+  parsearHostSync,
   probarPc,
   registrarCambio,
   sincronizarConPc,
 } from './storage'
+import { etiquetaProducto, parsearPedido, type PedidoResuelto } from './pedidoCodigo'
 import {
   CATALOGO_ONLINE,
   TIPOS,
@@ -27,6 +31,7 @@ type Pantalla =
   | { tipo: 'editor'; producto: Producto; esNuevo: boolean }
   | { tipo: 'coincidencias'; codigo: string; coincidencias: Producto[] }
   | { tipo: 'sync' }
+  | { tipo: 'pedido' }
 
 export default function App() {
   const [catalogo, setCatalogo] = useState<Catalogo | null>(null)
@@ -141,7 +146,7 @@ export default function App() {
   const alEscanear = async () => {
     try {
       setAviso(null)
-      const codigo = await escanearCodigo()
+      const codigo = await escanearCodigo((texto) => setAviso({ texto }))
       if (!codigo) return
 
       const coincidencias = buscarPorCodigo(productos, codigo)
@@ -260,6 +265,20 @@ export default function App() {
     )
   }
 
+  if (pantalla.tipo === 'pedido') {
+    return (
+      <PantallaPedido
+        productos={productos}
+        onVolver={() => setPantalla({ tipo: 'lista' })}
+        onOk={(mensaje) => {
+          setAviso({ texto: mensaje, tipo: 'ok' })
+          setPantalla({ tipo: 'lista' })
+        }}
+        onError={(mensaje) => setAviso({ texto: mensaje, tipo: 'error' })}
+      />
+    )
+  }
+
   return (
     <div className="app">
       <header className="barra">
@@ -271,6 +290,9 @@ export default function App() {
           </small>
         </div>
         <div className="acciones-barra">
+          <button type="button" className="boton fantasma" onClick={() => setPantalla({ tipo: 'pedido' })}>
+            Pedido
+          </button>
           <button type="button" className="boton fantasma" onClick={() => setPantalla({ tipo: 'sync' })}>
             Sync PC
           </button>
@@ -361,18 +383,58 @@ function PantallaSync({
   onError: (mensaje: string) => void
 }) {
   const [ip, setIp] = useState('')
+  const [guardada, setGuardada] = useState('')
   const [trabajando, setTrabajando] = useState(false)
   const [estado, setEstado] = useState<string | null>(null)
 
   useEffect(() => {
-    void leerIpPc().then(setIp)
+    void leerIpPc().then((valor) => {
+      setIp(valor)
+      setGuardada(valor)
+    })
   }, [])
+
+  const aplicarHost = async (entrada: string, persistir = true) => {
+    const host = parsearHostSync(entrada)
+    if (!host) {
+      onError('No reconocí una IP válida.')
+      return null
+    }
+    setIp(host)
+    if (persistir) {
+      await guardarIpPc(host)
+      setGuardada(host)
+    }
+    return host
+  }
+
+  const escanearQrPc = async () => {
+    setTrabajando(true)
+    setEstado(null)
+    try {
+      const leido = await escanearCodigo((texto) => setEstado(texto))
+      if (!leido) return
+      const host = await aplicarHost(leido, true)
+      if (host) setEstado(`PC guardada: ${host}`)
+    } catch (error) {
+      onError(error instanceof Error ? error.message : 'No se pudo escanear el QR')
+    } finally {
+      setTrabajando(false)
+    }
+  }
+
+  const guardarConfig = async () => {
+    const host = await aplicarHost(ip, true)
+    if (host) setEstado(`IP guardada. La próxima vez ya queda lista.`)
+  }
 
   const probar = async () => {
     setTrabajando(true)
     setEstado(null)
     try {
-      const r = await probarPc(ip)
+      const host = await aplicarHost(ip, true)
+      if (!host) return
+      const r = await probarPc(host)
       setEstado(`Conectado a ${r.servicio} · ${r.productos} productos en la PC`)
     } catch {
       setEstado(null)
@@ -386,7 +448,9 @@ function PantallaSync({
     setTrabajando(true)
     setEstado(null)
     try {
-      const r = await sincronizarConPc({ host: ip, reemplazarTodo })
+      const host = await aplicarHost(ip, true)
+      if (!host) return
+      const r = await sincronizarConPc({ host, reemplazarTodo })
       await onOk(`Sync OK · ${r.productos} productos en la PC (${r.modo})`)
     } catch (error) {
       onError(error instanceof Error ? error.message : 'Falló la sincronización')
@@ -400,7 +464,10 @@ function PantallaSync({
       <header className="barra">
         <div>
           <h1>Sync a la PC</h1>
-          <small>{pendientes} cambios pendientes</small>
+          <small>
+            {guardada ? `PC configurada: ${guardada}` : 'Configurá la PC una sola vez'}
+            {pendientes > 0 ? ` · ${pendientes} pendientes` : ''}
+          </small>
         </div>
         <button type="button" className="boton fantasma" onClick={onVolver}>
           Volver
@@ -408,15 +475,17 @@ function PantallaSync({
       </header>
       <main className="contenido">
         <p className="aviso">
-          1. Abrí el panel en la PC (misma WiFi).
+          En la PC: panel → <strong>Sync celular</strong> → escaneá el QR.
           <br />
-          2. Copiá la IP que aparece abajo a la izquierda (ej. 192.168.0.15:3847).
-          <br />
-          3. Pegala acá y tocá Enviar.
+          La IP se guarda en el celular para no cargarla de nuevo.
         </p>
 
-        <label className="campo">
-          <span>IP de la PC</span>
+        <button type="button" className="boton bloque oro" disabled={trabajando} onClick={() => void escanearQrPc()}>
+          Escanear QR de la PC
+        </button>
+
+        <label className="campo" style={{ marginTop: 14 }}>
+          <span>IP de la PC (manual)</span>
           <input
             value={ip}
             onChange={(e) => setIp(e.target.value)}
@@ -430,6 +499,9 @@ function PantallaSync({
         {estado && <p className="aviso ok">{estado}</p>}
 
         <div className="formulario" style={{ marginTop: 12 }}>
+          <button type="button" className="boton bloque" disabled={!ip || trabajando} onClick={() => void guardarConfig()}>
+            Guardar IP
+          </button>
           <button type="button" className="boton bloque" disabled={!ip || trabajando} onClick={() => void probar()}>
             Probar conexión
           </button>
@@ -452,6 +524,118 @@ function PantallaSync({
             Enviar catálogo completo
           </button>
         </div>
+      </main>
+    </div>
+  )
+}
+
+function PantallaPedido({
+  productos,
+  onVolver,
+  onOk,
+  onError,
+}: {
+  productos: Producto[]
+  onVolver: () => void
+  onOk: (mensaje: string) => void
+  onError: (mensaje: string) => void
+}) {
+  const [texto, setTexto] = useState('')
+  const [preview, setPreview] = useState<PedidoResuelto | null>(null)
+  const [trabajando, setTrabajando] = useState(false)
+  const [estado, setEstado] = useState<string | null>(null)
+
+  const leer = () => {
+    const resuelto = parsearPedido(texto, productos)
+    setPreview(resuelto)
+    if (resuelto.errores.length) onError(resuelto.errores[0])
+    else setEstado(null)
+  }
+
+  const enviar = async () => {
+    if (!preview?.codigo || preview.errores.length) {
+      onError('Primero leé un código válido.')
+      return
+    }
+    setTrabajando(true)
+    setEstado(null)
+    try {
+      const hostGuardado = await leerIpPc()
+      if (!hostGuardado) {
+        onError('Configurá la IP de la PC en Sync PC antes de enviar.')
+        return
+      }
+      const r = await enviarPedidoAPc(hostGuardado, preview.codigo)
+      onOk(
+        r.yaEstaba
+          ? `El pedido ${preview.codigo} ya estaba pendiente en el panel`
+          : `Pedido ${preview.codigo} enviado al panel · confirmá ahí para descontar`,
+      )
+    } catch (error) {
+      onError(error instanceof Error ? error.message : 'No se pudo enviar')
+    } finally {
+      setTrabajando(false)
+    }
+  }
+
+  return (
+    <div className="app">
+      <header className="barra">
+        <div>
+          <h1>Pedido WhatsApp</h1>
+          <small>Pegá el mensaje, compará y enviá al panel</small>
+        </div>
+        <button type="button" className="boton fantasma" onClick={onVolver}>
+          Volver
+        </button>
+      </header>
+      <main className="contenido">
+        <p className="aviso">
+          El stock se descuenta en la PC al confirmar. Acá solo revisás y mandás el pedido.
+        </p>
+        <label className="campo">
+          <span>Mensaje o código (#1x2,3x1)</span>
+          <textarea
+            rows={5}
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            placeholder="Pegá acá el WhatsApp…"
+          />
+        </label>
+        <div className="pedido-acciones">
+          <button type="button" className="boton bloque" disabled={trabajando} onClick={leer}>
+            Leer código
+          </button>
+          <button
+            type="button"
+            className="boton bloque oro"
+            disabled={trabajando || !preview?.codigo || Boolean(preview.errores.length)}
+            onClick={() => void enviar()}
+          >
+            Enviar al panel
+          </button>
+        </div>
+
+        {preview && (
+          <div className="aviso" style={{ marginTop: 14, whiteSpace: 'pre-wrap' }}>
+            {[
+              preview.codigo,
+              '',
+              ...preview.lineas.map((linea) => {
+                const nombre = linea.producto
+                  ? etiquetaProducto(linea.producto)
+                  : `Producto #${linea.indice} (no encontrado)`
+                const sub = linea.producto ? precio(linea.producto.precio * linea.cantidad) : '—'
+                const stock = linea.producto != null ? ` · stock ${linea.producto.stock}` : ''
+                return `• ${linea.cantidad} × ${nombre} — ${sub}${stock}`
+              }),
+              '',
+              `Total: ${precio(preview.total)}`,
+              preview.errores.length ? `\n⚠ ${preview.errores.join(' · ')}` : '',
+            ].join('\n')}
+          </div>
+        )}
+        {estado && <p className="aviso">{estado}</p>}
       </main>
     </div>
   )
