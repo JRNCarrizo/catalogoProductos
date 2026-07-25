@@ -43,7 +43,9 @@
   - Detalle de producto en modal.
   - **Carrito**: agregar NO abre el panel (se sigue navegando). Hay un
     **carrito flotante fijo abajo a la derecha** (cantidad + total + "Ver pedido").
-    Botón WhatsApp flotante abajo a la izquierda.
+    Botón WhatsApp flotante abajo a la izquierda. En la tarjeta del producto,
+    cuando hay unidades en el carrito aparece un botón **−** para restar
+    sin abrir el panel del pedido.
   - El pedido se envía armado por WhatsApp (`src/lib/whatsapp.ts`)
     con un **código corto** al final (`#3x2,7x1` = producto 3×2 + producto 7×1,
     según el orden de `productos.json`).
@@ -55,6 +57,16 @@
        el historial local (`admin/pedidos.json`).
     4. **Publicar** para que la web muestre el stock nuevo.
     Sin campo de nota (se decidió quitarlo: el chat cumple ese rol).
+  - **Pedidos en el panel:** vista de página completa con pestañas
+    **Nuevo pedido / Pendientes / Historial** (no modal). La vista previa
+    muestra líneas, total y alertas de stock; desde Pendientes se confirma
+    o descarta, y desde Historial se puede anular (devuelve stock).
+  - **Pedidos offline en la APK:** si no hay conexión con el panel, el
+    pedido queda guardado en una **cola local del celular** (botón
+    “Guardar offline” o automático si falla el envío). Con WiFi:
+    “Enviar pendientes” (o el Sync PC normal) manda todo y vacía la cola.
+    Si un pedido ya estaba pendiente o ya fue confirmado, la APK lo avisa
+    con un mensaje claro (no falla en silencio).
   - Sin foto → se muestra una botella ilustrada SVG (`BotellaIlustrada.tsx`)
     coloreada según el tipo de vino.
   - Footer con logo, contacto, navegación, avisos legales y
@@ -71,6 +83,13 @@
   (copia la imagen a `public/img/`), destacado, Ctrl+S guarda.
 - **Guardar** escribe `public/data/productos.json` (actualiza fecha `actualizado`).
 - **Publicar** ejecuta `git add -A && git commit && git push` y muestra el log.
+  El commit usa `git commit -F <archivo temporal>` (no `-m`) porque en Windows
+  los mensajes con espacios rompían el parseo de argumentos. El modal se
+  cierra solo al terminar bien.
+- **Pedidos**: sección de página completa con pestañas (Nuevo pedido /
+  Pendientes / Historial). Lógica del lado del main en `admin/pedidos.cjs`;
+  datos en `admin/pedidos.json`. El servidor de sync (puerto 3847) también
+  recibe pedidos desde la APK en `POST /api/pedido`.
 - Nota técnica: Electron se instaló con `electron@33` porque la última versión
   fallaba en Windows por un bug de npm con dependencias opcionales
   (`@electron-internal/extract-zip`). Si `npm install` no baja el binario,
@@ -145,6 +164,10 @@ funciona OFFLINE              WiFi  botón "Publicar"            (Netlify)
 
 - Con Capacitor (cámara del celular). Es un **atajo, no un requisito**: hay vinos
   sin código útil o con códigos que varían por lote.
+- **Nota Android:** el plugin usa el módulo de escaneo de Google (ML Kit).
+  La primera vez que se escanea, la app lo descarga sola mostrando el
+  progreso (`asegurarModuloGoogle` en `colector/src/escaner.ts`). Requiere
+  internet solo esa primera vez.
 - Relación de datos: **un código de barras → varios productos** (mismo vino,
   distintas cosechas). Agregar campo `codigoBarras` al producto
   (a futuro, posiblemente varios códigos por producto).
@@ -160,14 +183,17 @@ funciona OFFLINE              WiFi  botón "Publicar"            (Netlify)
 
 1. (Ya hecho) Catálogo web + panel PC.
 2. (Ya hecho) Publicar la web online (Netlify: `vinosderemate.netlify.app`).
-3. (En curso) APK admin (Capacitor) en carpeta `colector/`:
+3. (Ya hecho) APK admin (Capacitor) en carpeta `colector/`:
    alta/edición, stock +/−, offline, cola de cambios, importar desde la web,
-   escáner con flujo de cosechas. Probar con `npm run colector` o generar APK
-   con Android Studio (`cd colector && npm run android`).
-4. Escáner en dispositivo real + pulir UX.
-5. Cola de cambios pendientes + sync celu → PC por WiFi.
-6. Pedidos: código corto en WhatsApp + confirmar en panel (historial local)
-   + envío pendiente desde la APK.
+   escáner con flujo de cosechas. Probar con `cd colector && npm run dev`
+   o generar la APK directo con `cd colector && npm run apk`
+   (queda en `colector/apk/VinosColector-debug.apk`).
+4. (Ya hecho) Escáner en dispositivo real (con instalación automática del
+   módulo de Google la primera vez).
+5. (Ya hecho) Cola de cambios pendientes + sync celu → PC por WiFi.
+6. (Ya hecho) Pedidos: código corto en WhatsApp + confirmar en panel
+   (historial local) + envío desde la APK con **cola offline** que se vacía
+   al conectar.
 7. (Opcional futuro) Nube + login para independizarse de la PC y/o dar el
    sistema a terceros. Recomendación: Supabase.
 8. (Ideas mencionadas, sin decidir) PDF exportable, Mercado Pago, dominio propio.
@@ -177,15 +203,18 @@ funciona OFFLINE              WiFi  botón "Publicar"            (Netlify)
 ## 5. Estructura del repo
 
 ```
-admin/                  Panel de escritorio Electron (main.cjs, preload.cjs, ui/, pedidos)
+admin/                  Panel de escritorio Electron (main.cjs, preload.cjs, ui/)
+admin/pedidos.cjs       Lógica de pedidos: confirmar, descartar, anular, stock
 admin/pedidos.json      Historial y pendientes de pedidos (solo PC)
+admin/sync-server.cjs   Servidor WiFi puerto 3847 (sync catálogo + POST /api/pedido)
 public/data/productos.json   Fuente de verdad de los productos
 public/img/             Fotos de botellas (el panel las copia acá)
 src/config/sitio.ts     Marca, WhatsApp, textos (ÚNICO archivo a editar de marca)
 src/components/         UI del catálogo
 src/hooks/              useCatalogo, useCarrito, useSuperposicion
 src/lib/                formato, whatsapp, pedidoCodigo (#nxq), rutas
-colector/               APK Capacitor (offline, escáner, sync, pedido→panel)
+colector/               APK Capacitor (offline, escáner, sync, pedidos c/cola offline)
+colector/apk/           APK generada (VinosColector-debug.apk)
 netlify.toml            Deploy automático en Netlify
 Abrir panel.bat         Doble clic: levanta dev server + panel Electron
 PLAN.md                 Este documento
@@ -200,6 +229,8 @@ README.md               Instrucciones de uso e instalación
 | `npm run panel` | Panel de carga (Electron) |
 | `npm run build` | Build de producción (tsc + vite) |
 | `npm run preview` | Previsualizar el build |
+| `cd colector && npm run dev` | APK en modo navegador (prueba en PC) |
+| `cd colector && npm run apk` | Genera `colector/apk/VinosColector-debug.apk` |
 
 ## 7. Pendientes inmediatos
 
@@ -210,5 +241,6 @@ README.md               Instrucciones de uso e instalación
 - [x] Arrancar APK colectora (`colector/`) con offline + escáner.
 - [x] Sync celu → PC por WiFi (puerto 3847).
 - [x] Pedidos: código corto WhatsApp + confirmar en panel + historial.
-- [ ] Instalar APK actualizada en el celular y probar sync / pedidos.
+- [x] APK: cola de pedidos offline + aviso de pedido duplicado/confirmado.
+- [x] Instalar APK actualizada en el celular y probar sync / pedidos.
 - [ ] Publicar catálogo (con código en WhatsApp) a Netlify.

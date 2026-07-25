@@ -2,9 +2,9 @@
 
 > **Plan completo del proyecto y decisiones tomadas:** ver [PLAN.md](PLAN.md).
 
-Sitio web profesional (oscuro, estilo premium) para mostrar y vender vinos, más un **panel de escritorio** para cargar productos y publicar el catálogo **sin costo**.
+Sitio web profesional (oscuro, estilo premium) para mostrar y vender vinos, más un **panel de escritorio** para cargar productos y publicar el catálogo **sin costo**, y una **APK colectora** para cargar stock y tomar pedidos desde el celular (offline).
 
-Los pedidos se arman en un carrito y se envían por WhatsApp.
+Los pedidos se arman en un carrito y se envían por WhatsApp con un **código corto** (`#3x2,7x1`) que después se pega en el panel o en la APK para confirmar y descontar stock.
 
 ## Cómo funciona
 
@@ -53,8 +53,23 @@ En el panel podés:
 - Subir fotos de botellas
 - Guardar (actualiza `productos.json`)
 - **Publicar** (sube a GitHub; Netlify actualiza el sitio solo)
+- **Pedidos**: pegar el mensaje de WhatsApp del cliente, ver la vista previa,
+  **Confirmar** (descuenta stock) y consultar Pendientes / Historial
+  (con opción de anular, que devuelve el stock)
+- **Sync celular**: recibe cambios de catálogo y pedidos desde la APK por WiFi
 
 Atajo: `Ctrl + S` guarda.
+
+## Flujo de un pedido
+
+1. El cliente arma el carrito en la web y manda el pedido por WhatsApp
+   (incluye el código corto al final, ej. `#3x2,7x1`).
+2. Confirmás con el cliente por chat.
+3. Pegás el mensaje en **panel → Pedidos → Nuevo pedido** (o en la APK →
+   **Pedido**, que lo manda al panel; si no hay WiFi queda guardado offline
+   y se envía después).
+4. **Confirmar** en el panel: descuenta stock y guarda el pedido en el historial.
+5. **Publicar** para que la web muestre el stock actualizado.
 
 ## Datos tuyos (importante)
 
@@ -96,11 +111,13 @@ Desde entonces, cada vez que toques **Publicar** en el panel (git push), Netlify
 ## Estructura
 
 ```
-admin/                  Panel de escritorio (Electron)
+admin/                  Panel de escritorio (Electron) + pedidos + sync WiFi
+admin/pedidos.json      Pendientes e historial de pedidos (local)
 public/data/            productos.json (fuente de verdad)
 public/img/             fotos de botellas
 src/config/sitio.ts     nombre, WhatsApp, textos de marca
 src/components/         interfaz del catálogo
+colector/               APK Android (Capacitor): stock, escáner, pedidos offline
 netlify.toml            configuración de deploy en Netlify
 ```
 
@@ -112,10 +129,17 @@ netlify.toml            configuración de deploy en Netlify
 | `npm run panel` | Panel para cargar productos |
 | `npm run build` | Genera la versión para publicar |
 | `npm run preview` | Previsualiza el build |
+| `cd colector && npm run apk` | Genera la APK (`colector/apk/VinosColector-debug.apk`) |
+
+## APK colectora
+
+Ver [colector/README.md](colector/README.md). En resumen: alta/edición de
+vinos con escáner de código de barras, todo offline, sync con el panel por
+WiFi (puerto 3847) y envío de pedidos al panel con cola offline.
 
 ## Próximos pasos posibles
 
 - Dominio propio (ej. `vinos.com.ar`) apuntando a Netlify
-- APK colectora + escáner (ver PLAN.md)
 - Exportar PDF del catálogo
 - Mercado Pago cuando quieras cobrar online
+- Nube (Supabase) para independizarse de la PC (ver PLAN.md)
