@@ -2,6 +2,31 @@
   "pendientes": [],
   "historial": [
     {
+      "id": "ped-1785017231448",
+      "codigo": "#2x2,3x2",
+      "fecha": "2026-07-25T22:07:11.448Z",
+      "estado": "confirmado",
+      "origen": "celular",
+      "total": 47400,
+      "items": [
+        {
+          "productoId": "catena-cabernet-2020",
+          "indice": 2,
+          "nombre": "Catena Zapata Cabernet Sauvignon 2020",
+          "cantidad": 2,
+          "precio": 9200
+        },
+        {
+          "productoId": "dv-catena-malbec-malbec",
+          "indice": 3,
+          "nombre": "DV Catena Malbec Malbec 2019",
+          "cantidad": 2,
+          "precio": 14500
+        }
+      ],
+      "avisos": []
+    },
+    {
       "id": "ped-1785016851925",
       "codigo": "#3x2,2x1,8x4,7x1,1x1",
       "fecha": "2026-07-25T22:00:51.925Z",
