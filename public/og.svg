@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#080507"/>
+  <circle cx="200" cy="120" r="220" fill="#5d1422" opacity="0.45"/>
+  <circle cx="980" cy="520" r="260" fill="#b8912f" opacity="0.12"/>
+  <text x="80" y="300" fill="#f7f1e8" font-family="Georgia, serif" font-size="72">Vinos de Remate</text>
+  <text x="80" y="370" fill="#d4af53" font-family="Georgia, serif" font-size="34" font-style="italic">Buenos vinos · Buen precio</text>
+</svg>

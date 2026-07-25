@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data:; style-src 'self'" />
+    <title>Panel del catálogo</title>
+    <link rel="stylesheet" href="estilos.css" />
+  </head>
+  <body>
+    <header class="barra">
+      <div class="marca">
+        <span class="punto"></span>
+        <div>
+          <strong>Panel del catálogo</strong>
+          <small id="estado-archivo">Cargando…</small>
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button id="btn-vista-previa" class="boton fantasma" type="button">Ver el sitio</button>
+        <button id="btn-guardar" class="boton" type="button">Guardar cambios</button>
+        <button id="btn-publicar" class="boton primario" type="button">Publicar</button>
+      </div>
+    </header>
+
+    <main class="cuerpo">
+      <section class="lista">
+        <div class="lista-cabecera">
+          <input id="buscador" type="search" placeholder="Buscar vino…" />
+          <button id="btn-nuevo" class="boton compacto" type="button">+ Nuevo</button>
+        </div>
+        <ul id="lista-productos"></ul>
+        <p class="pie-lista"><span id="contador">0</span> etiquetas cargadas</p>
+      </section>
+
+      <section class="editor" id="editor">
+        <div class="vacio" id="editor-vacio">
+          <h2>Elegí un vino de la lista</h2>
+          <p>O creá uno nuevo para sumarlo al catálogo.</p>
+        </div>
+
+        <form id="formulario" class="formulario oculto" autocomplete="off">
+          <div class="editor-cabecera">
+            <h2 id="titulo-editor">Editar vino</h2>
+            <button type="button" id="btn-eliminar" class="boton peligro compacto">Eliminar</button>
+          </div>
+
+          <div class="grilla">
+            <label class="campo ancho">
+              <span>Nombre del vino</span>
+              <input name="nombre" required placeholder="Malbec Reserva" />
+            </label>
+
+            <label class="campo">
+              <span>Bodega</span>
+              <input name="bodega" placeholder="Finca Los Álamos" />
+            </label>
+
+            <label class="campo">
+              <span>Tipo</span>
+              <select name="tipo">
+                <option>Tinto</option>
+                <option>Blanco</option>
+                <option>Rosado</option>
+                <option>Espumante</option>
+                <option>Dulce</option>
+                <option>Otro</option>
+              </select>
+            </label>
+
+            <label class="campo">
+              <span>Variedad</span>
+              <input name="variedad" placeholder="Malbec" />
+            </label>
+
+            <label class="campo">
+              <span>Cosecha</span>
+              <input name="anio" type="number" min="1900" max="2100" placeholder="2021" />
+            </label>
+
+            <label class="campo ancho">
+              <span>Región</span>
+              <input name="region" placeholder="Valle de Uco, Mendoza" />
+            </label>
+
+            <label class="campo">
+              <span>Precio</span>
+              <input name="precio" type="number" min="0" step="1" required placeholder="12900" />
+            </label>
+
+            <label class="campo">
+              <span>Precio en góndola (referencia)</span>
+              <input name="precioAnterior" type="number" min="0" step="1" placeholder="para mostrar el ahorro" />
+            </label>
+
+            <label class="campo">
+              <span>Precio por unidad en caja</span>
+              <input name="precioCaja" type="number" min="0" step="1" placeholder="vacío = no aplica" />
+            </label>
+
+            <label class="campo">
+              <span>Stock (botellas)</span>
+              <input name="stock" type="number" min="0" step="1" placeholder="12" />
+            </label>
+
+            <label class="campo">
+              <span>Volumen (ml)</span>
+              <input name="volumenMl" type="number" min="0" step="50" placeholder="750" />
+            </label>
+
+            <label class="campo">
+              <span>Alcohol (% vol.)</span>
+              <input name="graduacion" type="number" min="0" max="30" step="0.1" placeholder="14.2" />
+            </label>
+
+            <label class="campo ancho">
+              <span>Descripción</span>
+              <textarea name="descripcion" rows="3" placeholder="Cómo es el vino, en dos o tres líneas."></textarea>
+            </label>
+
+            <label class="campo ancho">
+              <span>Notas de cata (separadas por coma)</span>
+              <input name="notas" placeholder="Ciruela madura, Vainilla, Pimienta negra" />
+            </label>
+
+            <label class="campo ancho">
+              <span>Maridaje</span>
+              <input name="maridaje" placeholder="Asado, cortes vacunos, quesos estacionados" />
+            </label>
+
+            <div class="campo ancho fila">
+              <label class="interruptor">
+                <input name="destacado" type="checkbox" />
+                <span>Mostrar como destacado</span>
+              </label>
+            </div>
+
+            <div class="campo ancho">
+              <span>Foto</span>
+              <div class="foto">
+                <div class="foto-vista" id="foto-vista">Sin foto</div>
+                <div class="foto-acciones">
+                  <button type="button" id="btn-foto" class="boton compacto">Elegir imagen…</button>
+                  <button type="button" id="btn-quitar-foto" class="boton fantasma compacto">Quitar</button>
+                  <p class="ayuda">Si no cargás foto, el catálogo muestra una botella ilustrada.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <div class="capa oculta" id="capa-publicar">
+      <div class="modal">
+        <h2>Publicar catálogo</h2>
+        <p class="ayuda">
+          Se guardan los cambios y se suben al repositorio. El sitio online se actualiza en uno o dos minutos.
+        </p>
+        <label class="campo">
+          <span>Descripción del cambio</span>
+          <input id="mensaje-commit" value="Actualizo el catálogo" />
+        </label>
+        <pre id="log-publicar" class="log oculto"></pre>
+        <div class="modal-acciones">
+          <button type="button" id="btn-cancelar-publicar" class="boton fantasma">Cancelar</button>
+          <button type="button" id="btn-confirmar-publicar" class="boton primario">Publicar ahora</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="aviso" class="aviso oculto"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
