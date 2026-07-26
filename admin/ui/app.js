@@ -29,6 +29,8 @@ const elementos = {
   editorVacio: $('#editor-vacio'),
   tituloEditor: $('#titulo-editor'),
   fotoVista: $('#foto-vista'),
+  fotoAyuda: $('#foto-ayuda'),
+  btnQuitarFondo: $('#btn-quitar-fondo'),
   aviso: $('#aviso'),
   capaPublicar: $('#capa-publicar'),
   logPublicar: $('#log-publicar'),
@@ -202,7 +204,11 @@ function dibujarLista() {
 }
 
 async function dibujarFoto(producto) {
-  if (!producto.imagen) {
+  if (elementos.btnQuitarFondo) {
+    elementos.btnQuitarFondo.disabled = !producto?.imagen
+  }
+
+  if (!producto?.imagen) {
     elementos.fotoVista.textContent = 'Sin foto'
     return
   }
@@ -225,6 +231,13 @@ async function dibujarFoto(producto) {
   } catch {
     elementos.fotoVista.textContent = 'No se pudo mostrar'
   }
+}
+
+function setProgresoFoto(texto) {
+  if (!elementos.fotoAyuda) return
+  elementos.fotoAyuda.textContent =
+    texto ||
+    'Al elegir una imagen se le quita el fondo automáticamente. La primera vez necesita internet (descarga el modelo).'
 }
 
 function seleccionar(id) {
@@ -356,17 +369,85 @@ function eliminar() {
   dibujarLista()
 }
 
+async function procesarQuitarFondo(producto, rutaActual) {
+  if (typeof window.quitarFondoDesdeDataUrl !== 'function') {
+    throw new Error('Todavía se está cargando el motor de quitar fondo. Probá en unos segundos.')
+  }
+
+  const dataUrl = await window.panel.urlRecurso(rutaActual)
+  if (!dataUrl) throw new Error('No se pudo leer la foto para quitar el fondo')
+
+  const base64 = await window.quitarFondoDesdeDataUrl(dataUrl, setProgresoFoto)
+  const ruta = await window.panel.guardarPng({
+    idProducto: producto.id,
+    base64,
+    reemplazar: rutaActual,
+  })
+  return ruta
+}
+
 async function elegirFoto() {
   const producto = productoActual()
   if (!producto) return
   if (esProvisorio(producto.id) && producto.nombre) producto.id = generarId(producto)
 
-  const ruta = await window.panel.elegirImagen(producto.id)
-  if (!ruta) return
+  const boton = $('#btn-foto')
+  if (boton) boton.disabled = true
+  if (elementos.btnQuitarFondo) elementos.btnQuitarFondo.disabled = true
 
-  producto.imagen = ruta
-  dibujarFoto(producto)
-  marcarSucio(true)
+  try {
+    const rutaOriginal = await window.panel.elegirImagen(producto.id)
+    if (!rutaOriginal) return
+
+    producto.imagen = rutaOriginal
+    await dibujarFoto(producto)
+    marcarSucio(true)
+
+    setProgresoFoto('Quitando el fondo…')
+    try {
+      const rutaPng = await procesarQuitarFondo(producto, rutaOriginal)
+      producto.imagen = rutaPng
+      await dibujarFoto(producto)
+      avisar('Foto lista sin fondo', 'exito')
+    } catch (error) {
+      avisar(
+        `Se guardó la foto original. No se pudo quitar el fondo: ${
+          error instanceof Error ? error.message : 'error'
+        }`,
+        'error',
+      )
+    }
+  } catch (error) {
+    avisar(error instanceof Error ? error.message : 'No se pudo cargar la foto', 'error')
+  } finally {
+    if (boton) boton.disabled = false
+    setProgresoFoto('')
+    if (elementos.btnQuitarFondo) elementos.btnQuitarFondo.disabled = !producto.imagen
+  }
+}
+
+async function quitarFondoFotoActual() {
+  const producto = productoActual()
+  if (!producto?.imagen) return
+
+  if (elementos.btnQuitarFondo) elementos.btnQuitarFondo.disabled = true
+  const boton = $('#btn-foto')
+  if (boton) boton.disabled = true
+  setProgresoFoto('Quitando el fondo…')
+
+  try {
+    const ruta = await procesarQuitarFondo(producto, producto.imagen)
+    producto.imagen = ruta
+    await dibujarFoto(producto)
+    marcarSucio(true)
+    avisar('Fondo quitado', 'exito')
+  } catch (error) {
+    avisar(error instanceof Error ? error.message : 'No se pudo quitar el fondo', 'error')
+  } finally {
+    if (boton) boton.disabled = false
+    setProgresoFoto('')
+    if (elementos.btnQuitarFondo) elementos.btnQuitarFondo.disabled = !producto.imagen
+  }
 }
 
 async function publicar() {
@@ -814,12 +895,13 @@ $('#btn-sugerir-ia').addEventListener('click', () => void sugerirDatos(true))
 $('#btn-guardar').addEventListener('click', guardar)
 $('#btn-guardar-editor').addEventListener('click', guardar)
 $('#btn-guardar-abajo').addEventListener('click', guardar)
-$('#btn-foto').addEventListener('click', elegirFoto)
+$('#btn-foto').addEventListener('click', () => void elegirFoto())
+$('#btn-quitar-fondo').addEventListener('click', () => void quitarFondoFotoActual())
 $('#btn-quitar-foto').addEventListener('click', () => {
   const producto = productoActual()
   if (!producto) return
   producto.imagen = ''
-  dibujarFoto(producto)
+  void dibujarFoto(producto)
   marcarSucio(true)
 })
 $('#btn-vista-previa').addEventListener('click', () => window.panel.vistaPrevia())

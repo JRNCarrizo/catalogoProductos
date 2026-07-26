@@ -13,6 +13,7 @@ const {
   anularPedido,
 } = require('./pedidos.cjs')
 const { sugerirDatosProducto, leerClaveGemini, configurarRutaGemini } = require('./sugerencias.cjs')
+const { crearServidorUi } = require('./ui-server.cjs')
 const QRCode = require('qrcode')
 
 let raizProyecto = path.join(__dirname, '..')
@@ -22,6 +23,8 @@ let carpetaImagenes = path.join(raizProyecto, 'public', 'img')
 
 let ventana = null
 let sync = null
+let uiHttp = null
+let urlUi = null
 
 function aplicarRaiz(raiz) {
   raizProyecto = raiz
@@ -227,7 +230,10 @@ function crearVentana() {
     },
   })
 
-  ventana.loadFile(path.join(__dirname, 'ui', 'index.html'))
+  // HTTP local: WASM/ONNX falla con file:// (blob:file imports).
+  const destino = urlUi || path.join(__dirname, 'ui', 'index.html')
+  if (urlUi) ventana.loadURL(urlUi)
+  else ventana.loadFile(destino)
 }
 
 app.whenReady().then(async () => {
@@ -264,6 +270,15 @@ app.whenReady().then(async () => {
     console.error('No se pudo iniciar el servidor de sync:', error)
   }
 
+  try {
+    uiHttp = crearServidorUi(path.join(__dirname, 'ui'))
+    const info = await uiHttp.iniciar()
+    urlUi = info.url
+  } catch (error) {
+    console.error('No se pudo iniciar el servidor de la UI:', error)
+    urlUi = null
+  }
+
   crearVentana()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) crearVentana()
@@ -276,6 +291,7 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   void sync?.detener()
+  void uiHttp?.detener()
 })
 
 /** Ejecuta un comando en la raíz del proyecto y devuelve su salida combinada. */
@@ -370,11 +386,33 @@ ipcMain.handle('imagen:elegir', async (_evento, idProducto) => {
   if (resultado.canceled || resultado.filePaths.length === 0) return null
 
   const origen = resultado.filePaths[0]
-  const extension = path.extname(origen).toLowerCase()
-  const nombreArchivo = `${idProducto || `foto-${Date.now()}`}${extension}`
+  const extension = path.extname(origen).toLowerCase() || '.jpg'
+  const base = String(idProducto || `foto-${Date.now()}`).replace(/[^\w.-]+/g, '-')
+  const nombreArchivo = `${base}${extension}`
 
   await fs.mkdir(carpetaImagenes, { recursive: true })
   await fs.copyFile(origen, path.join(carpetaImagenes, nombreArchivo))
+
+  return `img/${nombreArchivo}`
+})
+
+/** Guarda un PNG (base64) generado al quitar el fondo. */
+ipcMain.handle('imagen:guardar-png', async (_evento, { idProducto, base64, reemplazar }) => {
+  const base = String(idProducto || `foto-${Date.now()}`).replace(/[^\w.-]+/g, '-')
+  const nombreArchivo = `${base}.png`
+  const destino = path.join(carpetaImagenes, nombreArchivo)
+  const limpio = String(base64 || '').replace(/^data:image\/\w+;base64,/, '')
+  if (!limpio) throw new Error('No llegó la imagen procesada')
+
+  await fs.mkdir(carpetaImagenes, { recursive: true })
+  await fs.writeFile(destino, Buffer.from(limpio, 'base64'))
+
+  // Si había otra extensión (jpg/webp), la borramos para no dejar duplicados.
+  const vieja = String(reemplazar || '').replace(/\\/g, '/').replace(/^\/+/, '')
+  if (vieja.startsWith('img/') && !vieja.endsWith('.png') && !vieja.includes('..')) {
+    const absoluta = path.join(raizProyecto, 'public', ...vieja.split('/'))
+    if (absoluta !== destino) await fs.unlink(absoluta).catch(() => {})
+  }
 
   return `img/${nombreArchivo}`
 })

@@ -10,6 +10,7 @@
     "dev": "vite",
     "panel": "electron admin/main.cjs",
     "panel:release": "node scripts/build-panel-win.cjs",
+    "panel:bg": "esbuild node_modules/@imgly/background-removal/dist/index.mjs --bundle --format=esm --platform=browser --outfile=admin/ui/vendor/bg-removal.js --target=es2022",
     "iconos": "node scripts/generar-iconos.cjs",
     "colector": "npm run dev --prefix colector",
     "colector:android": "npm run android --prefix colector",
@@ -18,7 +19,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@imgly/background-removal": "^1.7.0",
     "@tailwindcss/vite": "^4.3.3",
+    "onnxruntime-web": "^1.21.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -32,6 +35,7 @@
     "@vitejs/plugin-react": "^6.0.3",
     "electron": "^33.4.11",
     "electron-builder": "^26.0.12",
+    "esbuild": "^0.28.1",
     "oxlint": "^1.71.0",
     "png-to-ico": "^3.0.2",
     "rcedit": "^5.0.2",

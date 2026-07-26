@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data:; style-src 'self'" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob:; style-src 'self'; img-src 'self' file: data: blob: https:; connect-src 'self' https://staticimgly.com https://*.img.ly https://cdn.jsdelivr.net blob: data:; worker-src 'self' blob: data:; child-src 'self' blob:; font-src 'self' data:;" />
     <title>Panel del catálogo</title>
     <link rel="stylesheet" href="estilos.css" />
   </head>
@@ -175,8 +175,13 @@
                 <div class="foto-vista" id="foto-vista">Sin foto</div>
                 <div class="foto-acciones">
                   <button type="button" id="btn-foto" class="boton compacto">Elegir imagen…</button>
+                  <button type="button" id="btn-quitar-fondo" class="boton compacto oro" disabled>
+                    Quitar fondo
+                  </button>
                   <button type="button" id="btn-quitar-foto" class="boton fantasma compacto">Quitar</button>
-                  <p class="ayuda">Si no cargás foto, el catálogo muestra una botella ilustrada.</p>
+                  <p class="ayuda" id="foto-ayuda">
+                    Al elegir una imagen se le quita el fondo automáticamente. La primera vez necesita internet (descarga el modelo).
+                  </p>
                 </div>
               </div>
             </div>
@@ -321,6 +326,7 @@
     <div id="aviso" class="aviso oculto"></div>
 
     <script src="pedido.js"></script>
+    <script type="module" src="quitar-fondo-cliente.mjs"></script>
     <script src="app.js"></script>
   </body>
 </html>

@@ -1,7 +1,33 @@
 {
-  "actualizado": "2026-07-26T02:38:37.526Z",
+  "actualizado": "2026-07-26T03:32:11.414Z",
   "moneda": "ARS",
   "productos": [
+    {
+      "id": "catena-zapata-dv-cabernet-malbec",
+      "nombre": "DV. Cabernet-Malbec",
+      "bodega": "Catena Zapata",
+      "tipo": "Tinto",
+      "variedad": "Cabernet Sauvignon - Malbec",
+      "anio": null,
+      "region": "Mendoza",
+      "precio": 9000,
+      "precioAnterior": 11800,
+      "precioCaja": null,
+      "volumenMl": 750,
+      "graduacion": 13.5,
+      "stock": 38,
+      "destacado": true,
+      "activo": true,
+      "codigoBarras": "",
+      "imagen": "img/catena-zapata-dv-cabernet-malbec.png",
+      "descripcion": "Este blend emblemático combina la estructura y elegancia del Cabernet Sauvignon con la suavidad frutal del Malbec. Es un vino de gran complejidad aromática y taninos sedosos, ideal para quienes buscan un exponente equilibrado y sofisticado de la vitivinicultura argentina.",
+      "notas": [
+        "Frutos rojos maduros",
+        "Especias",
+        "Vainilla y tabaco"
+      ],
+      "maridaje": "asado argentino, carnes rojas a la parrilla, pastas con salsas intensas, quesos duros"
+    },
     {
       "id": "catena-zapata-dv-catena-l-exploratore-malbec-la-rioja",
       "nombre": "DV. Catena L'exploratore Malbec La Rioja",
@@ -16,7 +42,7 @@
       "volumenMl": 750,
       "graduacion": 13.5,
       "stock": 36,
-      "destacado": false,
+      "destacado": true,
       "activo": true,
       "codigoBarras": "",
       "imagen": "img/catena-zapata-dv-catena-l-exploratore-malbec-la-rioja.png",
