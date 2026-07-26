@@ -237,7 +237,7 @@ function setProgresoFoto(texto) {
   if (!elementos.fotoAyuda) return
   elementos.fotoAyuda.textContent =
     texto ||
-    'Al elegir una imagen se le quita el fondo automáticamente. La primera vez necesita internet (descarga el modelo).'
+    'Al elegir una imagen se quita el fondo blanco automáticamente (ideal para fotos de botella).'
 }
 
 function seleccionar(id) {
@@ -371,7 +371,7 @@ function eliminar() {
 
 async function procesarQuitarFondo(producto, rutaActual) {
   if (typeof window.quitarFondoDesdeDataUrl !== 'function') {
-    throw new Error('Todavía se está cargando el motor de quitar fondo. Probá en unos segundos.')
+    throw new Error('Todavía se está cargando el quitador de fondo. Probá en unos segundos.')
   }
 
   const dataUrl = await window.panel.urlRecurso(rutaActual)
