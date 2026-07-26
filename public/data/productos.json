@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-07-26T15:41:01.213Z",
+  "actualizado": "2026-07-26T15:46:54.905Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -431,7 +431,7 @@
       "destacado": false,
       "activo": true,
       "codigoBarras": "",
-      "imagen": "",
+      "imagen": "img/catena-zapata-saint-felicien-malbec.png",
       "descripcion": "Un clásico indiscutible de la vitivinicultura argentina que destaca por su elegancia y equilibrio. Este Malbec ofrece una estructura compleja y taninos sedosos, resultado de una cuidadosa crianza en barricas de roble francés.",
       "notas": [
         "frutos rojos maduros",
