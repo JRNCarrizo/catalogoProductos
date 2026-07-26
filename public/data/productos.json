@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-07-26T15:46:54.905Z",
+  "actualizado": "2026-07-26T15:53:02.909Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -67,7 +67,7 @@
       "destacado": false,
       "activo": true,
       "codigoBarras": "",
-      "imagen": "",
+      "imagen": "img/catena-zapata-dv-malbec-malbec-1-5.png",
       "descripcion": "Este vino es un blend de dos viñedos de altura seleccionados, que aporta una complejidad excepcional y una estructura elegante. En boca se percibe equilibrado, con taninos sedosos y un final persistente que refleja la excelencia del terroir mendocino.",
       "notas": [
         "frutos rojos maduros",
@@ -431,7 +431,7 @@
       "destacado": false,
       "activo": true,
       "codigoBarras": "",
-      "imagen": "img/catena-zapata-saint-felicien-malbec.png",
+      "imagen": "",
       "descripcion": "Un clásico indiscutible de la vitivinicultura argentina que destaca por su elegancia y equilibrio. Este Malbec ofrece una estructura compleja y taninos sedosos, resultado de una cuidadosa crianza en barricas de roble francés.",
       "notas": [
         "frutos rojos maduros",
