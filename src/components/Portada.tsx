@@ -23,49 +23,49 @@ function VisualPortada({
 }) {
   const esMobile = variante === 'mobile'
 
+  if (esMobile) {
+    return (
+      <div className="relative mx-auto mt-6 mb-1 flex w-full max-w-md justify-center lg:hidden">
+        {foto && fotoOk ? (
+          <img
+            src={foto}
+            alt={`${sitio.nombre} — portada`}
+            className="relative z-10 h-auto w-[92%] max-w-[22rem] object-contain [filter:drop-shadow(0_18px_14px_rgba(247,241,232,0.35))_drop-shadow(0_8px_10px_rgba(212,175,83,0.2))]"
+            onError={onError}
+          />
+        ) : (
+          <div className="relative z-10 flex h-56 scale-75">
+            <BotellaIlustrada tipo="Tinto" bodega="Catena Zapata" variedad="Malbec" className="h-56" />
+            <BotellaIlustrada tipo="Blanco" bodega="Alamos" variedad="Chardonnay" className="-ml-10 h-48 self-end" />
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Desktop: fuera del flujo, no empuja ni aplasta el texto de la izquierda.
   return (
-    <div
-      className={
-        esMobile
-          ? 'relative mx-auto mt-6 mb-1 flex w-full max-w-md justify-center lg:hidden'
-          : 'relative hidden items-center justify-start lg:flex'
-      }
-    >
-      <div
-        className={
-          esMobile
-            ? 'absolute bottom-4 left-1/2 h-16 w-56 -translate-x-1/2 rounded-[50%] bg-black/55 blur-2xl'
-            : 'absolute bottom-8 left-[40%] h-24 w-72 -translate-x-1/2 rounded-[50%] bg-black/60 blur-3xl'
-        }
-      />
+    <div className="pointer-events-none absolute top-1/2 right-0 z-0 hidden w-[48%] -translate-y-[58%] justify-end lg:flex xl:w-[50%]">
       {foto && fotoOk ? (
         <img
           src={foto}
           alt={`${sitio.nombre} — portada`}
-          className={
-            esMobile
-              ? 'relative z-10 h-auto w-[92%] max-w-[22rem] object-contain drop-shadow-[0_24px_40px_rgba(0,0,0,0.55)]'
-              : 'relative z-10 -ml-6 h-auto w-[95%] max-w-[32rem] object-contain drop-shadow-[0_35px_60px_rgba(0,0,0,0.65)] xl:-ml-10'
-          }
+          className="relative z-10 h-[30rem] w-auto max-w-full object-contain [filter:drop-shadow(0_22px_16px_rgba(247,241,232,0.38))_drop-shadow(0_10px_12px_rgba(212,175,83,0.22))] xl:h-[36rem] xl:translate-x-4 2xl:h-[40rem] 2xl:translate-x-8"
           onError={onError}
         />
       ) : (
-        <div className={`relative z-10 flex ${esMobile ? 'h-56 scale-75' : ''}`}>
+        <div className="relative z-10 flex">
           <BotellaIlustrada
             tipo="Tinto"
             bodega="Catena Zapata"
             variedad="Malbec"
-            className={esMobile ? 'h-56' : 'h-[30rem] drop-shadow-[0_35px_60px_rgba(0,0,0,0.65)]'}
+            className="h-[30rem] drop-shadow-[0_35px_60px_rgba(0,0,0,0.65)]"
           />
           <BotellaIlustrada
             tipo="Blanco"
             bodega="Alamos"
             variedad="Chardonnay"
-            className={
-              esMobile
-                ? '-ml-10 h-48 self-end'
-                : '-ml-16 h-[25rem] self-end drop-shadow-[0_35px_60px_rgba(0,0,0,0.65)]'
-            }
+            className="-ml-16 h-[25rem] self-end drop-shadow-[0_35px_60px_rgba(0,0,0,0.65)]"
           />
         </div>
       )}
@@ -79,23 +79,22 @@ export function Portada({ cantidadEtiquetas, cantidadBodegas }: Props) {
   const onError = () => setFotoOk(false)
 
   return (
-    <section id="inicio" className="relative overflow-x-clip pt-24 pb-16 sm:pt-28 sm:pb-20">
+    <section id="inicio" className="relative overflow-x-clip pt-24 pb-16 sm:pt-28 sm:pb-20 lg:min-h-[38rem] xl:min-h-[44rem]">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-40 -left-32 size-[34rem] rounded-full bg-vino-700/35 blur-[120px]" />
         <div className="absolute top-24 -right-24 size-[26rem] rounded-full bg-oro-500/12 blur-[110px]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(255,255,255,0.06),transparent_60%)]" />
       </div>
 
-      <div className="contenedor grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6 xl:gap-10">
-        <div className="animar-aparecer">
+      <div className="contenedor relative">
+        <div className="animar-aparecer relative z-10 mx-auto max-w-xl lg:mx-0 lg:max-w-[34rem] xl:max-w-[38rem]">
           <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-oro-400/30 bg-oro-400/5 px-4 py-1.5 text-[11px] tracking-[0.2em] text-oro-200 uppercase">
             {sitio.hero.volanta}
           </p>
 
-          <h1 className="text-center font-display text-4xl leading-[1.12] font-semibold sm:text-6xl lg:text-left lg:text-7xl">
-            {sitio.hero.titulo}
-            <br />
-            <span className="texto-oro italic">{sitio.hero.tituloDestacado}</span>
+          <h1 className="text-center font-display text-4xl leading-[1.12] font-semibold sm:text-6xl lg:text-left lg:text-6xl xl:text-7xl">
+            <span className="block lg:whitespace-nowrap">{sitio.hero.titulo}</span>
+            <span className="texto-oro block italic lg:whitespace-nowrap">{sitio.hero.tituloDestacado}</span>
           </h1>
 
           <VisualPortada foto={foto} fotoOk={fotoOk} onError={onError} variante="mobile" />

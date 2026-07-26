@@ -22,7 +22,7 @@ export const sitio = {
     tituloDestacado: 'al precio que merecés',
     subtitulo: 'Catálogo actualizado. Elegí tus botellas, armá el pedido y lo confirmamos por WhatsApp.',
     /** Foto de portada: poné el archivo en public/img/portada.jpg (o .webp / .png). */
-    imagen: 'img/portada.png',
+    imagen: 'img/portada2.png',
   },
 
   entrega: {
