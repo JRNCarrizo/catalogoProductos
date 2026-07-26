@@ -67,5 +67,44 @@ export function subtotalLinea(producto: Producto, cantidad: number): number {
 }
 
 export function etiquetaProducto(producto: Producto): string {
-  return [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
+  return [producto.nombre, producto.variedad, producto.anio].filter(Boolean).join(' · ')
+}
+
+/** Arma un código #índicexcant a partir de líneas elegidas (índice = posición en el catálogo). */
+export function armarPedidoDesdeLineas(
+  lineas: { producto: Producto; cantidad: number }[],
+  catalogo: Producto[],
+): PedidoResuelto {
+  const errores: string[] = []
+  const resueltas: LineaPedido[] = []
+  const partes: string[] = []
+
+  for (const linea of lineas) {
+    if (linea.cantidad < 1) continue
+    const indice = catalogo.findIndex((p) => p.id === linea.producto.id)
+    if (indice < 0) {
+      errores.push(`No está en el catálogo: ${linea.producto.nombre}`)
+      continue
+    }
+    const nro = indice + 1
+    partes.push(`${nro}x${linea.cantidad}`)
+    resueltas.push({ indice: nro, cantidad: linea.cantidad, producto: linea.producto })
+  }
+
+  if (!partes.length) {
+    return {
+      codigo: '',
+      lineas: [],
+      total: 0,
+      errores: errores.length ? errores : ['Agregá al menos un producto.'],
+    }
+  }
+
+  const codigo = `#${partes.join(',')}`
+  const total = resueltas.reduce((acc, linea) => {
+    if (!linea.producto) return acc
+    return acc + subtotalLinea(linea.producto, linea.cantidad)
+  }, 0)
+
+  return { codigo, lineas: resueltas, total, errores }
 }

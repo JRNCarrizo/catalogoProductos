@@ -22,7 +22,7 @@ import {
   sugerirDesdeCodigoBarras,
   sugerirDesdePanel,
 } from './sugerencias'
-import { etiquetaProducto, parsearPedido, subtotalLinea, type PedidoResuelto } from './pedidoCodigo'
+import { etiquetaProducto, parsearPedido, armarPedidoDesdeLineas, subtotalLinea, type PedidoResuelto } from './pedidoCodigo'
 import {
   CATALOGO_ONLINE,
   TIPOS,
@@ -269,7 +269,7 @@ export default function App() {
                 {producto.nombre} {producto.anio ?? ''}
               </strong>
               <small>
-                {producto.bodega} · {precio(producto.precio)} · stock {producto.stock}
+                {producto.variedad} · {precio(producto.precio)} · stock {producto.stock}
               </small>
             </button>
           ))}
@@ -399,7 +399,7 @@ export default function App() {
                     {!estaActivo(producto) && <span className="marca-oculto">oculto</span>}
                   </p>
                   <p className="meta">
-                    {[producto.bodega, producto.anio, precio(producto.precio)].filter(Boolean).join(' · ')}
+                    {[producto.variedad, producto.anio, precio(producto.precio)].filter(Boolean).join(' · ')}
                     {producto.codigoBarras ? ` · ${producto.codigoBarras}` : ''}
                   </p>
                 </button>
@@ -614,13 +614,21 @@ function PantallaPedido({
   onVolver: () => void
   onOk: (mensaje: string) => void | Promise<void>
 }) {
+  const [modo, setModo] = useState<'pegar' | 'armar'>('pegar')
   const [texto, setTexto] = useState('')
   const [preview, setPreview] = useState<PedidoResuelto | null>(null)
+  const [lineasArmado, setLineasArmado] = useState<{ producto: Producto; cantidad: number }[]>([])
   const [trabajando, setTrabajando] = useState(false)
   const [cola, setCola] = useState<PedidoLocalPendiente[]>([])
   const [avisoLocal, setAvisoLocal] = useState<{ texto: string; tipo: 'ok' | 'error' | 'info' } | null>(
     null,
   )
+
+  const previewArmado = useMemo(
+    () => (modo === 'armar' ? armarPedidoDesdeLineas(lineasArmado, productos) : null),
+    [modo, lineasArmado, productos],
+  )
+  const activo = modo === 'armar' ? previewArmado : preview
 
   const refrescarCola = useCallback(async () => {
     setCola(await leerPedidosLocales())
@@ -639,31 +647,79 @@ function PantallaPedido({
     }
   }
 
+  const escanearProducto = async () => {
+    try {
+      setAvisoLocal({ texto: 'Abriendo cámara…', tipo: 'info' })
+      const codigo = await escanearCodigo((texto) => setAvisoLocal({ texto, tipo: 'info' }))
+      if (!codigo) {
+        setAvisoLocal(null)
+        return
+      }
+      const coincidencias = buscarPorCodigo(productos, codigo)
+      if (coincidencias.length === 0) {
+        setAvisoLocal({ texto: `No hay producto con código ${codigo} en el catálogo.`, tipo: 'error' })
+        return
+      }
+      if (coincidencias.length > 1) {
+        setAvisoLocal({
+          texto: `Hay ${coincidencias.length} cosechas con ese código. Elegí una en el listado o unificá códigos.`,
+          tipo: 'error',
+        })
+        // Si hay varias, tomamos la primera con stock o la primera; better UX: add first and warn
+      }
+      const elegido = coincidencias.find((p) => p.stock > 0) ?? coincidencias[0]
+      setLineasArmado((prev) => {
+        const idx = prev.findIndex((l) => l.producto.id === elegido.id)
+        if (idx >= 0) {
+          return prev.map((l, i) => (i === idx ? { ...l, cantidad: l.cantidad + 1 } : l))
+        }
+        return [...prev, { producto: elegido, cantidad: 1 }]
+      })
+      setAvisoLocal({
+        texto: `+ ${elegido.nombre}${elegido.variedad ? ` · ${elegido.variedad}` : ''}`,
+        tipo: 'ok',
+      })
+    } catch (error) {
+      setAvisoLocal({
+        texto: error instanceof Error ? error.message : 'No se pudo escanear.',
+        tipo: 'error',
+      })
+    }
+  }
+
+  const setCantidadArmado = (id: string, cantidad: number) => {
+    setLineasArmado((prev) => {
+      if (cantidad < 1) return prev.filter((l) => l.producto.id !== id)
+      return prev.map((l) => (l.producto.id === id ? { ...l, cantidad } : l))
+    })
+  }
+
   const guardarOffline = async () => {
-    if (!preview?.codigo || preview.errores.length) {
-      setAvisoLocal({ texto: 'Primero leé un código válido.', tipo: 'error' })
+    if (!activo?.codigo || activo.errores.length) {
+      setAvisoLocal({ texto: 'Primero armá o leé un pedido válido.', tipo: 'error' })
       return
     }
     setTrabajando(true)
     try {
-      const r = await guardarPedidoLocal(preview.codigo)
+      const r = await guardarPedidoLocal(activo.codigo)
       await refrescarCola()
       setAvisoLocal({
         texto: r.yaEstaba
-          ? `El pedido ${preview.codigo} ya estaba guardado offline.`
-          : `Pedido ${preview.codigo} guardado offline. Cuando haya WiFi con el panel, usá «Enviar pendientes».`,
+          ? `El pedido ${activo.codigo} ya estaba guardado offline.`
+          : `Pedido ${activo.codigo} guardado offline. Cuando haya WiFi con el panel, usá «Enviar pendientes».`,
         tipo: 'info',
       })
       setTexto('')
       setPreview(null)
+      setLineasArmado([])
     } finally {
       setTrabajando(false)
     }
   }
 
   const enviar = async () => {
-    if (!preview?.codigo || preview.errores.length) {
-      setAvisoLocal({ texto: 'Primero leé un código válido.', tipo: 'error' })
+    if (!activo?.codigo || activo.errores.length) {
+      setAvisoLocal({ texto: 'Primero armá o leé un pedido válido.', tipo: 'error' })
       return
     }
     setTrabajando(true)
@@ -671,7 +727,7 @@ function PantallaPedido({
     try {
       const hostGuardado = await leerIpPc()
       if (!hostGuardado) {
-        await guardarPedidoLocal(preview.codigo)
+        await guardarPedidoLocal(activo.codigo)
         await refrescarCola()
         setAvisoLocal({
           texto: `Sin IP de la PC: el pedido quedó guardado offline. Configurá Sync PC y después «Enviar pendientes».`,
@@ -679,20 +735,25 @@ function PantallaPedido({
         })
         setTexto('')
         setPreview(null)
+        setLineasArmado([])
         return
       }
-      const r = await enviarPedidoAPc(hostGuardado, preview.codigo)
+      const r = await enviarPedidoAPc(hostGuardado, activo.codigo)
       await refrescarCola()
       if (r.yaEstaba) {
         setAvisoLocal({
-          texto: `Este pedido (${preview.codigo}) ya está pendiente en el panel. No hace falta enviarlo de nuevo: confirmalo ahí.`,
+          texto: `Este pedido (${activo.codigo}) ya está pendiente en el panel. No hace falta enviarlo de nuevo: confirmalo ahí.`,
           tipo: 'info',
         })
         setTexto('')
         setPreview(null)
+        setLineasArmado([])
         return
       }
-      await onOk(`Pedido ${preview.codigo} enviado al panel · confirmá ahí para descontar`)
+      setTexto('')
+      setPreview(null)
+      setLineasArmado([])
+      await onOk(`Pedido ${activo.codigo} enviado al panel · confirmá ahí para descontar`)
     } catch (error) {
       const textoError = error instanceof Error ? error.message : 'No se pudo enviar'
       if (textoError.includes('ya fue confirmado')) {
@@ -701,15 +762,15 @@ function PantallaPedido({
           tipo: 'error',
         })
       } else {
-        // Sin conexión / panel cerrado → queda en cola local
-        await guardarPedidoLocal(preview.codigo)
+        await guardarPedidoLocal(activo.codigo)
         await refrescarCola()
         setAvisoLocal({
-          texto: `Sin conexión con el panel: el pedido ${preview.codigo} quedó guardado offline. Cuando vuelva la WiFi, tocá «Enviar pendientes».`,
+          texto: `Sin conexión con el panel: el pedido ${activo.codigo} quedó guardado offline. Cuando vuelva la WiFi, tocá «Enviar pendientes».`,
           tipo: 'info',
         })
         setTexto('')
         setPreview(null)
+        setLineasArmado([])
       }
     } finally {
       setTrabajando(false)
@@ -756,13 +817,15 @@ function PantallaPedido({
     }
   }
 
+  const puedeEnviar = Boolean(activo?.codigo) && !activo?.errores.length
+
   return (
     <div className="app">
       <header className="barra">
         <div>
-          <h1>Pedido WhatsApp</h1>
+          <h1>Pedido</h1>
           <small>
-            Pegá el mensaje, compará y enviá al panel
+            Pegá WhatsApp o armá escaneando
             {cola.length > 0 ? ` · ${cola.length} offline` : ''}
           </small>
         </div>
@@ -771,38 +834,30 @@ function PantallaPedido({
         </button>
       </header>
       <main className="contenido">
-        <p className="aviso">
-          Sin WiFi podés guardar el pedido offline. Cuando conectes con el panel, enviá los
-          pendientes (también se mandan al hacer Sync PC).
-        </p>
-        <label className="campo">
-          <span>Mensaje o código (#1x2,3x1)</span>
-          <textarea
-            rows={5}
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            placeholder="Pegá acá el WhatsApp…"
-          />
-        </label>
-        <div className="pedido-acciones">
-          <button type="button" className="boton bloque" disabled={trabajando} onClick={leer}>
-            Leer código
+        <div className="pedido-modos" role="tablist" aria-label="Modo de pedido">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={modo === 'pegar'}
+            className={modo === 'pegar' ? 'activo' : ''}
+            onClick={() => {
+              setModo('pegar')
+              setAvisoLocal(null)
+            }}
+          >
+            Pegar WhatsApp
           </button>
           <button
             type="button"
-            className="boton bloque oro"
-            disabled={trabajando || !preview?.codigo || Boolean(preview.errores.length)}
-            onClick={() => void enviar()}
+            role="tab"
+            aria-selected={modo === 'armar'}
+            className={modo === 'armar' ? 'activo' : ''}
+            onClick={() => {
+              setModo('armar')
+              setAvisoLocal(null)
+            }}
           >
-            Enviar al panel
-          </button>
-          <button
-            type="button"
-            className="boton bloque"
-            disabled={trabajando || !preview?.codigo || Boolean(preview.errores.length)}
-            onClick={() => void guardarOffline()}
-          >
-            Guardar offline
+            Armar escaneando
           </button>
         </div>
 
@@ -810,27 +865,128 @@ function PantallaPedido({
           <p className={`aviso ${avisoLocal.tipo === 'info' ? 'info' : avisoLocal.tipo}`}>{avisoLocal.texto}</p>
         )}
 
-        {preview && (
-          <div className="aviso" style={{ marginTop: 14, whiteSpace: 'pre-wrap' }}>
-            {[
-              preview.codigo,
-              '',
-              ...preview.lineas.map((linea) => {
-                const nombre = linea.producto
-                  ? etiquetaProducto(linea.producto)
-                  : `Producto #${linea.indice} (no encontrado)`
-                const sub = linea.producto
-                  ? precio(subtotalLinea(linea.producto, linea.cantidad))
-                  : '—'
-                const stock = linea.producto != null ? ` · stock ${linea.producto.stock}` : ''
-                return `• ${linea.cantidad} × ${nombre} — ${sub}${stock}`
-              }),
-              '',
-              `Total: ${precio(preview.total)}`,
-              preview.errores.length ? `\n⚠ ${preview.errores.join(' · ')}` : '',
-            ].join('\n')}
+        {modo === 'pegar' ? (
+          <div className="pedido-panel">
+            <p className="aviso">
+              Pegá el mensaje de WhatsApp, leé el código y enviálo al panel (o guardalo offline).
+            </p>
+            <label className="campo">
+              <span>Mensaje o código (#1x2,3x1)</span>
+              <textarea
+                rows={5}
+                value={texto}
+                onChange={(e) => setTexto(e.target.value)}
+                placeholder="Pegá acá el WhatsApp…"
+              />
+            </label>
+            <button type="button" className="boton bloque" disabled={trabajando} onClick={leer}>
+              Leer código
+            </button>
+
+            {preview && (
+              <div className="aviso pedido-preview">
+                {[
+                  preview.codigo,
+                  '',
+                  ...preview.lineas.map((linea) => {
+                    const nombre = linea.producto
+                      ? etiquetaProducto(linea.producto)
+                      : `Producto #${linea.indice} (no encontrado)`
+                    const sub = linea.producto
+                      ? precio(subtotalLinea(linea.producto, linea.cantidad))
+                      : '—'
+                    const stock = linea.producto != null ? ` · stock ${linea.producto.stock}` : ''
+                    return `• ${linea.cantidad} × ${nombre} — ${sub}${stock}`
+                  }),
+                  '',
+                  `Total: ${precio(preview.total)}`,
+                  preview.errores.length ? `\n⚠ ${preview.errores.join(' · ')}` : '',
+                ].join('\n')}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="pedido-panel pedido-armado">
+            <p className="aviso">
+              Escaneá cada botella, ajustá cantidades y después guardá o enviá el pedido.
+            </p>
+
+            <button
+              type="button"
+              className="boton bloque oro pedido-armado-escanear"
+              disabled={trabajando}
+              onClick={() => void escanearProducto()}
+            >
+              Escanear producto
+            </button>
+
+            {lineasArmado.length === 0 ? (
+              <p className="pedido-armado-vacio">Todavía no hay ítems. Tocá escanear para sumar la primera botella.</p>
+            ) : (
+              <ul className="pedido-armado-lista">
+                {lineasArmado.map((linea) => (
+                  <li key={linea.producto.id}>
+                    <div className="pedido-armado-info">
+                      <strong>{linea.producto.nombre}</strong>
+                      <small>
+                        {[linea.producto.variedad, precio(linea.producto.precio)].filter(Boolean).join(' · ')}
+                        {linea.cantidad >= 2 && linea.producto.precioCaja != null
+                          ? ` · promo ${precio(linea.producto.precioCaja)}`
+                          : ''}
+                      </small>
+                      <small className="pedido-armado-sub">
+                        Subtotal {precio(subtotalLinea(linea.producto, linea.cantidad))}
+                      </small>
+                    </div>
+                    <div className="pedido-armado-qty">
+                      <button
+                        type="button"
+                        aria-label="Bajar cantidad"
+                        onClick={() => setCantidadArmado(linea.producto.id, linea.cantidad - 1)}
+                      >
+                        −
+                      </button>
+                      <span>{linea.cantidad}</span>
+                      <button
+                        type="button"
+                        aria-label="Subir cantidad"
+                        onClick={() => setCantidadArmado(linea.producto.id, linea.cantidad + 1)}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {previewArmado && previewArmado.codigo && (
+              <div className="pedido-armado-total">
+                <code>{previewArmado.codigo}</code>
+                <strong>Total {precio(previewArmado.total)}</strong>
+              </div>
+            )}
           </div>
         )}
+
+        <div className="pedido-acciones">
+          <button
+            type="button"
+            className="boton bloque oro"
+            disabled={trabajando || !puedeEnviar}
+            onClick={() => void enviar()}
+          >
+            Enviar al panel
+          </button>
+          <button
+            type="button"
+            className="boton bloque"
+            disabled={trabajando || !puedeEnviar}
+            onClick={() => void guardarOffline()}
+          >
+            Guardar offline
+          </button>
+        </div>
 
         {cola.length > 0 && (
           <div className="pedido-cola">
@@ -904,6 +1060,24 @@ function Editor({
       })
     } finally {
       setSugeriendo(false)
+    }
+  }
+
+  const escanearParaCampo = async () => {
+    try {
+      setAvisoLocal({ texto: 'Abriendo cámara…', tipo: 'info' })
+      const codigo = await escanearCodigo((texto) => setAvisoLocal({ texto, tipo: 'info' }))
+      if (!codigo) {
+        setAvisoLocal(null)
+        return
+      }
+      set('codigoBarras', codigo)
+      setAvisoLocal({ texto: `Código cargado: ${codigo}`, tipo: 'ok' })
+    } catch (error) {
+      setAvisoLocal({
+        texto: error instanceof Error ? error.message : 'No se pudo escanear.',
+        tipo: 'error',
+      })
     }
   }
 
@@ -1016,14 +1190,26 @@ function Editor({
             </label>
           </div>
 
-          <label className="campo">
+          <div className="campo">
             <span>Código de barras</span>
-            <input
-              value={producto.codigoBarras}
-              onChange={(e) => set('codigoBarras', e.target.value)}
-              inputMode="numeric"
-            />
-          </label>
+            <div className="campo-con-accion">
+              <input
+                value={producto.codigoBarras}
+                onChange={(e) => set('codigoBarras', e.target.value)}
+                inputMode="numeric"
+                placeholder="Escaneá o escribí el código"
+              />
+              <button
+                type="button"
+                className="boton oro"
+                disabled={sugeriendo}
+                onClick={() => void escanearParaCampo()}
+                aria-label="Escanear código de barras"
+              >
+                Escanear
+              </button>
+            </div>
+          </div>
 
           <div className="pedido-acciones">
             <button

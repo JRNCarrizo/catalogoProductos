@@ -255,9 +255,141 @@ textarea {
 .pedido-acciones {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   margin-top: 18px;
   margin-bottom: 8px;
+}
+
+.pedido-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pedido-preview {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.pedido-modos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.pedido-modos button {
+  border: 1px solid var(--borde);
+  background: var(--panel);
+  color: var(--humo);
+  border-radius: 999px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+}
+
+.pedido-modos button.activo {
+  border-color: color-mix(in srgb, var(--oro) 55%, transparent);
+  background: color-mix(in srgb, var(--oro) 16%, transparent);
+  color: var(--crema);
+}
+
+.pedido-armado-escanear {
+  margin: 0;
+}
+
+.pedido-armado-vacio {
+  margin: 0;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px dashed var(--borde);
+  color: var(--humo);
+  font-size: 0.85rem;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.pedido-armado-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.pedido-armado-lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--borde);
+  background: var(--panel);
+}
+
+.pedido-armado-info {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.pedido-armado-info strong {
+  color: var(--crema);
+  font-size: 0.95rem;
+}
+
+.pedido-armado-info small,
+.pedido-armado-sub {
+  color: var(--humo);
+  font-size: 0.75rem;
+}
+
+.pedido-armado-qty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pedido-armado-qty button {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--borde);
+  background: transparent;
+  color: var(--crema);
+  font-size: 1.1rem;
+}
+
+.pedido-armado-qty span {
+  min-width: 1.5rem;
+  text-align: center;
+  color: var(--crema);
+  font-weight: 600;
+}
+
+.pedido-armado-total {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--oro) 35%, transparent);
+  background: color-mix(in srgb, var(--oro) 10%, transparent);
+}
+
+.pedido-armado-total code {
+  color: var(--humo);
+  font-size: 0.75rem;
+  word-break: break-all;
+}
+
+.pedido-armado-total strong {
+  color: var(--oro);
+  font-size: 1.05rem;
+  white-space: nowrap;
 }
 
 .pedido-cola {
@@ -445,6 +577,23 @@ textarea {
 .campo textarea {
   resize: vertical;
   min-height: 80px;
+}
+
+.campo-con-accion {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.campo-con-accion input {
+  flex: 1;
+  min-width: 0;
+}
+
+.campo-con-accion .boton {
+  flex-shrink: 0;
+  padding-inline: 14px;
+  white-space: nowrap;
 }
 
 .interruptor {
