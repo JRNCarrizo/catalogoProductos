@@ -90,69 +90,71 @@ export default function App() {
         <Portada cantidadEtiquetas={productos.length} cantidadBodegas={bodegas.length} />
         <Beneficios />
 
-        <section id="catalogo" className="contenedor scroll-mt-28 py-16 sm:scroll-mt-32">
+        <section className="contenedor py-16">
           <div className="mb-8 max-w-2xl">
             <p className="text-[11px] tracking-[0.2em] text-oro-300 uppercase">Catálogo</p>
             <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">Elegí y pedí</h2>
             <p className="mt-4 text-humo">Sumá botellas al pedido y envialo por WhatsApp.</p>
           </div>
 
-          <Filtros
-            filtros={filtros}
-            onCambiar={setFiltros}
-            tipos={tipos}
-            bodegas={bodegas}
-            resultados={visibles.length}
-          />
+          <div id="catalogo" className="scroll-mt-20 sm:scroll-mt-24">
+            <Filtros
+              filtros={filtros}
+              onCambiar={setFiltros}
+              tipos={tipos}
+              bodegas={bodegas}
+              resultados={visibles.length}
+            />
 
-          {cargando && (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, indice) => (
-                <div
-                  key={indice}
-                  className="h-[30rem] animate-pulse rounded-2xl border border-white/8 bg-noche-850"
-                />
-              ))}
-            </div>
-          )}
+            {cargando && (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, indice) => (
+                  <div
+                    key={indice}
+                    className="h-[30rem] animate-pulse rounded-2xl border border-white/8 bg-noche-850"
+                  />
+                ))}
+              </div>
+            )}
 
-          {error && (
-            <div className="rounded-2xl border border-vino-600/40 bg-vino-900/20 p-8 text-center">
-              <p className="font-display text-2xl text-crema">{error}</p>
-              <p className="mt-2 text-sm text-humo">
-                Probá recargar la página. Si sigue igual, escribinos por WhatsApp y te pasamos la lista.
-              </p>
-            </div>
-          )}
+            {error && (
+              <div className="rounded-2xl border border-vino-600/40 bg-vino-900/20 p-8 text-center">
+                <p className="font-display text-2xl text-crema">{error}</p>
+                <p className="mt-2 text-sm text-humo">
+                  Probá recargar la página. Si sigue igual, escribinos por WhatsApp y te pasamos la lista.
+                </p>
+              </div>
+            )}
 
-          {!cargando && !error && visibles.length === 0 && (
-            <div className="rounded-2xl border border-white/10 bg-noche-850 p-12 text-center">
-              <p className="font-display text-2xl text-crema">No encontramos vinos con ese criterio</p>
-              <p className="mt-2 text-sm text-humo">Probá quitar algún filtro o buscar por variedad.</p>
-              <button
-                type="button"
-                onClick={() => setFiltros(filtrosIniciales)}
-                className="mt-6 rounded-full border border-white/18 px-6 py-2.5 text-sm text-crema transition hover:border-oro-400/60 hover:text-oro-200"
-              >
-                Ver todo el catálogo
-              </button>
-            </div>
-          )}
+            {!cargando && !error && visibles.length === 0 && (
+              <div className="rounded-2xl border border-white/10 bg-noche-850 p-12 text-center">
+                <p className="font-display text-2xl text-crema">No encontramos vinos con ese criterio</p>
+                <p className="mt-2 text-sm text-humo">Probá quitar algún filtro o buscar por variedad.</p>
+                <button
+                  type="button"
+                  onClick={() => setFiltros(filtrosIniciales)}
+                  className="mt-6 rounded-full border border-white/18 px-6 py-2.5 text-sm text-crema transition hover:border-oro-400/60 hover:text-oro-200"
+                >
+                  Ver todo el catálogo
+                </button>
+              </div>
+            )}
 
-          {visibles.length > 0 && (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {visibles.map((producto) => (
-                <TarjetaProducto
-                  key={producto.id}
-                  producto={producto}
-                  enCarrito={carrito.cantidades.get(producto.id) ?? 0}
-                  onAgregar={agregar}
-                  onRestar={restar}
-                  onVerDetalle={setDetalle}
-                />
-              ))}
-            </div>
-          )}
+            {visibles.length > 0 && (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {visibles.map((producto) => (
+                  <TarjetaProducto
+                    key={producto.id}
+                    producto={producto}
+                    enCarrito={carrito.cantidades.get(producto.id) ?? 0}
+                    onAgregar={agregar}
+                    onRestar={restar}
+                    onVerDetalle={setDetalle}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </section>
       </main>
 

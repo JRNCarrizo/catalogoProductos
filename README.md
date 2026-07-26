@@ -56,9 +56,23 @@ En el panel podés:
 - **Pedidos**: pegar el mensaje de WhatsApp del cliente, ver la vista previa,
   **Confirmar** (descuenta stock) y consultar Pendientes / Historial
   (con opción de anular, que devuelve el stock)
+- **Sugerir datos** al editar un vino: **Por código** (Open Food Facts) y
+  **Con IA** (Gemini). No toca precio ni stock; solo rellena campos vacíos.
 - **Sync celular**: recibe cambios de catálogo y pedidos desde la APK por WiFi
 
 Atajo: `Ctrl + S` guarda.
+
+### Clave de IA (opcional, gratis)
+
+Para el botón **Con IA**:
+
+1. Creá una clave en [Google AI Studio](https://aistudio.google.com/apikey) (gratis).
+2. Copiá `admin/config.local.example.json` → `admin/config.local.json`.
+3. Pegá la clave en `geminiApiKey`.
+4. Reiniciá el panel (`npm run panel`).
+
+Ese archivo no se sube a Git. Sin clave, igual funciona **Por código**
+(Open Food Facts). En la APK, la IA usa la clave del panel (misma WiFi).
 
 ## Flujo de un pedido
 
@@ -127,6 +141,7 @@ netlify.toml            configuración de deploy en Netlify
 |---------|----------|
 | `npm run dev` | Catálogo en local |
 | `npm run panel` | Panel para cargar productos |
+| `npm run panel:release` | Genera instalador Windows en `release/` |
 | `npm run build` | Genera la versión para publicar |
 | `npm run preview` | Previsualiza el build |
 | `cd colector && npm run apk` | Genera la APK (`colector/apk/VinosColector-debug.apk`) |

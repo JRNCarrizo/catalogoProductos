@@ -712,11 +712,77 @@ async function iniciar() {
   })
 }
 
+async function sugerirDatos(forzarIa = false) {
+  const producto = productoActual()
+  if (!producto) {
+    avisar('Abrí o creá un vino primero.', 'error')
+    return
+  }
+
+  leerFormulario()
+  const campos = elementos.formulario.elements
+  const codigo = campos.codigoBarras.value.trim()
+  const nombre = campos.nombre.value.trim()
+  const bodega = campos.bodega.value.trim()
+
+  if (!forzarIa && !codigo && !nombre && !bodega) {
+    avisar('Cargá el código de barras o al menos el nombre / bodega.', 'error')
+    return
+  }
+  if (forzarIa && !nombre && !bodega && !codigo) {
+    avisar('Para la IA hace falta el nombre (o bodega + variedad).', 'error')
+    return
+  }
+
+  avisar(forzarIa ? 'Consultando IA…' : 'Buscando datos…', 'exito')
+  try {
+    const resultado = await window.panel.sugerirProducto({
+      codigoBarras: codigo,
+      nombre,
+      bodega,
+      variedad: campos.variedad.value.trim(),
+      tipo: campos.tipo.value,
+      forzarIa,
+    })
+
+    if (resultado.error || resultado.ok === false) {
+      throw new Error(resultado.error || resultado.aviso || 'No se pudieron sugerir datos')
+    }
+
+    const s = resultado.sugerencia || {}
+    const vacio = (valor) => valor == null || valor === '' || (Array.isArray(valor) && !valor.length)
+
+    if (s.nombre && vacio(producto.nombre)) campos.nombre.value = s.nombre
+    if (s.bodega && vacio(producto.bodega)) campos.bodega.value = s.bodega
+    if (s.tipo) campos.tipo.value = s.tipo
+    if (s.variedad && vacio(producto.variedad)) campos.variedad.value = s.variedad
+    if (s.anio != null && vacio(producto.anio)) campos.anio.value = s.anio
+    if (s.region && vacio(producto.region)) campos.region.value = s.region
+    if (s.volumenMl && (!producto.volumenMl || producto.volumenMl === 750)) {
+      campos.volumenMl.value = s.volumenMl
+    }
+    if (s.graduacion != null && vacio(producto.graduacion)) campos.graduacion.value = s.graduacion
+    if (s.descripcion && vacio(producto.descripcion)) campos.descripcion.value = s.descripcion
+    if (s.notas?.length && vacio(producto.notas)) campos.notas.value = s.notas.join(', ')
+    if (s.maridaje && vacio(producto.maridaje)) campos.maridaje.value = s.maridaje
+    if (s.codigoBarras && vacio(producto.codigoBarras)) campos.codigoBarras.value = s.codigoBarras
+
+    leerFormulario()
+    dibujarLista()
+    const fuentes = (resultado.fuentes || []).join(' + ') || 'ok'
+    avisar(`Datos sugeridos (${fuentes}). Revisá y guardá. ${resultado.aviso || ''}`.trim(), 'exito')
+  } catch (error) {
+    avisar(error instanceof Error ? error.message : 'No se pudieron sugerir datos', 'error')
+  }
+}
+
 elementos.formulario.addEventListener('input', leerFormulario)
 elementos.formulario.addEventListener('submit', (evento) => evento.preventDefault())
 elementos.buscador.addEventListener('input', dibujarLista)
 $('#btn-nuevo').addEventListener('click', nuevo)
 $('#btn-eliminar').addEventListener('click', eliminar)
+$('#btn-sugerir-codigo').addEventListener('click', () => void sugerirDatos(false))
+$('#btn-sugerir-ia').addEventListener('click', () => void sugerirDatos(true))
 $('#btn-guardar').addEventListener('click', guardar)
 $('#btn-foto').addEventListener('click', elegirFoto)
 $('#btn-quitar-foto').addEventListener('click', () => {

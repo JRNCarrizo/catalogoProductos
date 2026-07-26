@@ -9,6 +9,10 @@ pedidos de WhatsApp.
 - Lista de productos con stock **+ / −**
 - Alta y edición de vinos
 - Campo **código de barras**
+- **Completar por código**: busca en Open Food Facts (internet del celu)
+- **Completar con IA**: pide al panel (Gemini); hace falta Sync PC / panel abierto
+  y `admin/config.local.json` con la clave
+- Campos de descripción, notas de cata y maridaje en el editor
 - **Escanear**:
   - 0 coincidencias → crear producto con el código
   - 1 coincidencia → abrir ese producto

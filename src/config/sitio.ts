@@ -4,7 +4,7 @@
  */
 export const sitio = {
   nombre: 'Vinos de Remate',
-  lema: 'Buenos vinos · Buen precio',
+  lema: 'Cada botella · Una oportunidad',
 
   /** Número de WhatsApp en formato internacional, sin + ni espacios. */
   whatsapp: '5491138332282',
@@ -18,9 +18,11 @@ export const sitio = {
 
   hero: {
     volanta: 'Stock limitado · Pedidos por WhatsApp',
-    titulo: 'Buenos vinos,',
-    tituloDestacado: 'buen precio',
+    titulo: 'El vino que querés,',
+    tituloDestacado: 'al precio que merecés',
     subtitulo: 'Catálogo actualizado. Elegí tus botellas, armá el pedido y lo confirmamos por WhatsApp.',
+    /** Foto de portada: poné el archivo en public/img/portada.jpg (o .webp / .png). */
+    imagen: 'img/portada.png',
   },
 
   entrega: {

@@ -35,46 +35,50 @@ export function Filtros({ filtros, onCambiar, tipos, bodegas, resultados }: Prop
 
   return (
     <div className="sticky top-16 z-30 -mx-5 mb-10 border-y border-white/8 bg-noche-950/85 px-5 py-4 backdrop-blur-xl sm:top-18">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <label className="relative flex-1">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <label className="relative w-full lg:min-w-0 lg:flex-1">
             <IconoBuscar className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-humo" />
             <input
               type="search"
               value={filtros.busqueda}
               onChange={(evento) => actualizar({ busqueda: evento.target.value })}
-              placeholder="Buscar por nombre, bodega, variedad o región"
+              placeholder="Buscar por nombre, marca, variedad o región"
               className={`${claseCampo} pl-11`}
             />
           </label>
 
-          <select
-            value={filtros.bodega}
-            onChange={(evento) => actualizar({ bodega: evento.target.value })}
-            className={`${claseCampo} sm:w-52`}
-          >
-            <option value="todas">Todas las bodegas</option>
-            {bodegas.map((bodega) => (
-              <option key={bodega} value={bodega}>
-                {bodega}
-              </option>
-            ))}
-          </select>
+          <div className="grid grid-cols-2 gap-3 lg:contents">
+            <select
+              value={filtros.bodega}
+              onChange={(evento) => actualizar({ bodega: evento.target.value })}
+              className={`${claseCampo} lg:w-52 lg:shrink-0`}
+              aria-label="Filtrar por marca"
+            >
+              <option value="todas">Todas las marcas</option>
+              {bodegas.map((bodega) => (
+                <option key={bodega} value={bodega}>
+                  {bodega}
+                </option>
+              ))}
+            </select>
 
-          <select
-            value={filtros.orden}
-            onChange={(evento) => actualizar({ orden: evento.target.value as Orden })}
-            className={`${claseCampo} sm:w-52`}
-          >
-            {ordenes.map((orden) => (
-              <option key={orden.valor} value={orden.valor}>
-                {orden.texto}
-              </option>
-            ))}
-          </select>
+            <select
+              value={filtros.orden}
+              onChange={(evento) => actualizar({ orden: evento.target.value as Orden })}
+              className={`${claseCampo} lg:w-52 lg:shrink-0`}
+              aria-label="Ordenar"
+            >
+              {ordenes.map((orden) => (
+                <option key={orden.valor} value={orden.valor}>
+                  {orden.texto}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <Pastilla
             activa={filtros.tipo === 'todos'}
             onClick={() => actualizar({ tipo: 'todos' })}
@@ -97,8 +101,8 @@ export function Filtros({ filtros, onCambiar, tipos, bodegas, resultados }: Prop
             texto="En oferta"
           />
 
-          <span className="ml-auto flex items-center gap-3 text-xs text-humo">
-            {resultados} {resultados === 1 ? 'botella' : 'botellas'}
+          <span className="ml-auto flex shrink-0 items-center gap-3 pl-2 text-xs text-humo">
+            {resultados} {resultados === 1 ? 'producto' : 'productos'}
             {hayFiltros && (
               <button
                 type="button"
@@ -132,7 +136,7 @@ function Pastilla({
       type="button"
       onClick={onClick}
       aria-pressed={activa}
-      className={`rounded-full border px-4 py-1.5 text-xs tracking-wide transition ${
+      className={`shrink-0 rounded-full border px-4 py-1.5 text-xs tracking-wide whitespace-nowrap transition ${
         activa
           ? 'border-oro-400/70 bg-oro-400/15 text-oro-200'
           : 'border-white/12 text-humo hover:border-white/30 hover:text-crema'

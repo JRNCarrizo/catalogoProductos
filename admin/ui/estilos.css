@@ -99,6 +99,13 @@ body {
   background: var(--vino-claro);
 }
 
+.boton.oro {
+  background: var(--oro);
+  color: var(--noche);
+  border-color: transparent;
+  font-weight: 600;
+}
+
 .boton.fantasma {
   background: transparent;
 }
@@ -367,7 +374,15 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 20px;
+}
+
+.editor-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .editor-cabecera h2 {

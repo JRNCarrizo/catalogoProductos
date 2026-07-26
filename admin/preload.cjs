@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('panel', {
   confirmarPedido: (payload) => ipcRenderer.invoke('pedidos:confirmar', payload),
   descartarPendiente: (id) => ipcRenderer.invoke('pedidos:descartar', id),
   anularPedido: (id) => ipcRenderer.invoke('pedidos:anular', id),
+  sugerirProducto: (entrada) => ipcRenderer.invoke('sugerencias:producto', entrada),
+  estadoSugerencias: () => ipcRenderer.invoke('sugerencias:estado'),
   onCatalogoDesdeCelular: (callback) => {
     const handler = (_evento, catalogo) => callback(catalogo)
     ipcRenderer.on('catalogo:desde-celular', handler)

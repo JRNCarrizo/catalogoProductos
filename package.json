@@ -1,11 +1,16 @@
 {
-  "name": "catalogoproducto",
+  "name": "vinos-de-remate-panel",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Panel de carga de Vinos de Remate",
+  "author": "JRNCarrizo",
+  "main": "admin/main.cjs",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "panel": "electron admin/main.cjs",
+    "panel:release": "node scripts/build-panel-win.cjs",
+    "iconos": "node scripts/generar-iconos.cjs",
     "colector": "npm run dev --prefix colector",
     "colector:android": "npm run android --prefix colector",
     "build": "tsc -b && vite build",
@@ -26,8 +31,60 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "electron": "^33.4.11",
+    "electron-builder": "^26.0.12",
     "oxlint": "^1.71.0",
+    "png-to-ico": "^3.0.2",
+    "rcedit": "^5.0.2",
+    "sharp": "^0.35.3",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
+  },
+  "build": {
+    "appId": "com.vinosderemate.panel",
+    "productName": "Vinos de Remate Panel",
+    "copyright": "Copyright © JRNCarrizo",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "admin/**/*",
+      "!admin/config.local.json",
+      "!admin/config.local.example.json",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "icon": "admin/icon.ico",
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "VinosPanel-Portable.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Vinos de Remate Panel",
+      "artifactName": "VinosPanel-Setup.exe",
+      "installerIcon": "admin/icon.ico",
+      "uninstallerIcon": "admin/icon.ico",
+      "installerHeaderIcon": "admin/icon.ico"
+    }
   }
 }

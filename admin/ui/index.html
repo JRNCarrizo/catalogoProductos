@@ -47,7 +47,15 @@
         <form id="formulario" class="formulario oculto" autocomplete="off">
           <div class="editor-cabecera">
             <h2 id="titulo-editor">Editar vino</h2>
-            <button type="button" id="btn-eliminar" class="boton peligro compacto">Eliminar</button>
+            <div class="editor-acciones">
+              <button type="button" id="btn-sugerir-codigo" class="boton compacto" title="Busca en Open Food Facts y completa con IA si hace falta">
+                Por código
+              </button>
+              <button type="button" id="btn-sugerir-ia" class="boton compacto oro" title="Completa descripción, maridaje y notas con IA (Gemini)">
+                Con IA
+              </button>
+              <button type="button" id="btn-eliminar" class="boton peligro compacto">Eliminar</button>
+            </div>
           </div>
 
           <div class="grilla">

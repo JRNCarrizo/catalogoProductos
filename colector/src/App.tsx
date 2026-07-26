@@ -17,6 +17,11 @@ import {
   sincronizarConPc,
   type PedidoLocalPendiente,
 } from './storage'
+import {
+  aplicarSugerencia,
+  sugerirDesdeCodigoBarras,
+  sugerirDesdePanel,
+} from './sugerencias'
 import { etiquetaProducto, parsearPedido, type PedidoResuelto } from './pedidoCodigo'
 import {
   CATALOGO_ONLINE,
@@ -29,6 +34,25 @@ import {
   type Producto,
 } from './types'
 import './index.css'
+
+function CopaLogo() {
+  return (
+    <svg viewBox="0 0 32 32" width="22" height="22" fill="none" aria-hidden="true">
+      <path
+        d="M10 7h12l-1 8.2A5.2 5.2 0 0 1 16 20a5.2 5.2 0 0 1-5-4.8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M16 20v5M12.5 25h7"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
 
 type Pantalla =
   | { tipo: 'lista' }
@@ -294,24 +318,48 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="barra">
-        <div>
-          <h1>Vinos Colector</h1>
-          <small>
-            {productos.length} productos
-            {pendientes > 0 ? ` · ${pendientes} cambios pendientes` : ' · sincronizado local'}
-            {pedidosLocales > 0 ? ` · ${pedidosLocales} pedido${pedidosLocales === 1 ? '' : 's'} por enviar` : ''}
-          </small>
+      <header className="barra barra-home">
+        <div className="barra-marca">
+          <span className="marca-logo" aria-hidden="true">
+            <CopaLogo />
+          </span>
+          <div className="marca-texto">
+            <h1>Vinos Colector</h1>
+            <div className="marca-chips">
+              <span className="chip">{productos.length} productos</span>
+              <span className={`chip ${pendientes > 0 ? 'chip-alerta' : 'chip-ok'}`}>
+                {pendientes > 0 ? `${pendientes} sin sincronizar` : 'sincronizado'}
+              </span>
+              {pedidosLocales > 0 && (
+                <span className="chip chip-oro">
+                  {pedidosLocales} pedido{pedidosLocales === 1 ? '' : 's'} por enviar
+                </span>
+              )}
+            </div>
+          </div>
         </div>
         <div className="acciones-barra">
-          <button type="button" className="boton fantasma" onClick={() => setPantalla({ tipo: 'pedido' })}>
-            Pedido{pedidosLocales > 0 ? ` (${pedidosLocales})` : ''}
+          <button
+            type="button"
+            className="accion"
+            onClick={() => setPantalla({ tipo: 'pedido' })}
+          >
+            <span className="accion-icono" aria-hidden="true">🧾</span>
+            <span className="accion-texto">Pedido</span>
+            {pedidosLocales > 0 && <span className="accion-badge">{pedidosLocales}</span>}
           </button>
-          <button type="button" className="boton fantasma" onClick={() => setPantalla({ tipo: 'sync' })}>
-            Sync PC
+          <button type="button" className="accion" onClick={() => setPantalla({ tipo: 'sync' })}>
+            <span className="accion-icono" aria-hidden="true">📶</span>
+            <span className="accion-texto">Sync PC</span>
           </button>
-          <button type="button" className="boton fantasma" onClick={importarOnline} title="Traer catálogo de la web">
-            ↓ Web
+          <button
+            type="button"
+            className="accion"
+            onClick={importarOnline}
+            title="Traer catálogo de la web"
+          >
+            <span className="accion-icono" aria-hidden="true">↓</span>
+            <span className="accion-texto">Web</span>
           </button>
         </div>
       </header>
@@ -817,9 +865,68 @@ function Editor({
   onEliminar: (id: string) => Promise<void>
 }) {
   const [producto, setProducto] = useState(inicial)
+  const [sugeriendo, setSugeriendo] = useState(false)
+  const [avisoLocal, setAvisoLocal] = useState<{ texto: string; tipo: 'ok' | 'error' | 'info' } | null>(
+    null,
+  )
 
   const set = <K extends keyof Producto>(clave: K, valor: Producto[K]) => {
     setProducto((previo) => ({ ...previo, [clave]: valor }))
+  }
+
+  const completarPorCodigo = async () => {
+    if (!producto.codigoBarras.trim()) {
+      setAvisoLocal({ texto: 'Cargá o escaneá un código de barras primero.', tipo: 'error' })
+      return
+    }
+    setSugeriendo(true)
+    setAvisoLocal({ texto: 'Buscando en Open Food Facts…', tipo: 'info' })
+    try {
+      const r = await sugerirDesdeCodigoBarras(producto.codigoBarras)
+      setProducto((prev) => aplicarSugerencia(prev, r.sugerencia))
+      setAvisoLocal({
+        texto: `${r.aviso} Si faltan maridaje/notas, usá «Completar con IA» (panel abierto).`,
+        tipo: 'ok',
+      })
+    } catch (error) {
+      setAvisoLocal({
+        texto: error instanceof Error ? error.message : 'No se encontró el código',
+        tipo: 'error',
+      })
+    } finally {
+      setSugeriendo(false)
+    }
+  }
+
+  const completarConIa = async () => {
+    if (!producto.nombre.trim() && !producto.bodega.trim() && !producto.codigoBarras.trim()) {
+      setAvisoLocal({
+        texto: 'Poné al menos el nombre (ej. DV Cabernet Malbec) o el código.',
+        tipo: 'error',
+      })
+      return
+    }
+    setSugeriendo(true)
+    setAvisoLocal({ texto: 'Consultando IA vía el panel…', tipo: 'info' })
+    try {
+      const r = await sugerirDesdePanel({
+        codigoBarras: producto.codigoBarras,
+        nombre: producto.nombre,
+        bodega: producto.bodega,
+        variedad: producto.variedad,
+        tipo: producto.tipo,
+        forzarIa: true,
+      })
+      setProducto((prev) => aplicarSugerencia(prev, r.sugerencia))
+      setAvisoLocal({ texto: r.aviso || 'Listo. Revisá y guardá.', tipo: 'ok' })
+    } catch (error) {
+      setAvisoLocal({
+        texto: error instanceof Error ? error.message : 'No se pudo completar con IA',
+        tipo: 'error',
+      })
+    } finally {
+      setSugeriendo(false)
+    }
   }
 
   return (
@@ -909,17 +1016,83 @@ function Editor({
             />
           </label>
 
+          <div className="pedido-acciones">
+            <button
+              type="button"
+              className="boton bloque"
+              disabled={sugeriendo}
+              onClick={() => void completarPorCodigo()}
+            >
+              Completar por código
+            </button>
+            <button
+              type="button"
+              className="boton bloque oro"
+              disabled={sugeriendo}
+              onClick={() => void completarConIa()}
+            >
+              Completar con IA
+            </button>
+          </div>
+
+          {avisoLocal && (
+            <p className={`aviso ${avisoLocal.tipo === 'info' ? 'info' : avisoLocal.tipo}`}>{avisoLocal.texto}</p>
+          )}
+
           <label className="campo">
             <span>Región</span>
             <input value={producto.region} onChange={(e) => set('region', e.target.value)} />
           </label>
+
+          <div className="grilla-2">
+            <label className="campo">
+              <span>Volumen (ml)</span>
+              <input
+                type="number"
+                min={0}
+                value={producto.volumenMl || ''}
+                onChange={(e) => set('volumenMl', Number(e.target.value) || 750)}
+              />
+            </label>
+            <label className="campo">
+              <span>Alcohol %</span>
+              <input
+                type="number"
+                min={0}
+                step={0.1}
+                value={producto.graduacion ?? ''}
+                onChange={(e) => set('graduacion', e.target.value === '' ? null : Number(e.target.value))}
+              />
+            </label>
+          </div>
 
           <label className="campo">
             <span>Descripción</span>
             <textarea value={producto.descripcion} onChange={(e) => set('descripcion', e.target.value)} />
           </label>
 
-          <button type="submit" className="boton bloque primario">
+          <label className="campo">
+            <span>Notas de cata (coma)</span>
+            <input
+              value={(producto.notas || []).join(', ')}
+              onChange={(e) =>
+                set(
+                  'notas',
+                  e.target.value
+                    .split(',')
+                    .map((n) => n.trim())
+                    .filter(Boolean),
+                )
+              }
+            />
+          </label>
+
+          <label className="campo">
+            <span>Maridaje</span>
+            <input value={producto.maridaje} onChange={(e) => set('maridaje', e.target.value)} />
+          </label>
+
+          <button type="submit" className="boton bloque primario" disabled={sugeriendo}>
             Guardar
           </button>
 

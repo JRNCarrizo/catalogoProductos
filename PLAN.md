@@ -46,6 +46,14 @@
     Botón WhatsApp flotante abajo a la izquierda. En la tarjeta del producto,
     cuando hay unidades en el carrito aparece un botón **−** para restar
     sin abrir el panel del pedido.
+  - **Sugerencia automática de datos** (panel y APK): al cargar un vino se puede
+    completar nombre, bodega, tipo, variedad, región, volumen, alcohol,
+    descripción, notas y maridaje (nunca precio ni stock):
+    1. **Por código de barras** → Open Food Facts (gratis, sin clave).
+    2. **Con IA** → Gemini (clave gratis en Google AI Studio, en
+       `admin/config.local.json`). En la APK la IA pasa por el panel
+       (`POST /api/sugerir`) para no guardar la clave en el celular.
+    Solo rellena campos vacíos; siempre hay que revisar antes de guardar.
   - El pedido se envía armado por WhatsApp (`src/lib/whatsapp.ts`)
     con un **código corto** al final (`#3x2,7x1` = producto 3×2 + producto 7×1,
     según el orden de `productos.json`).
@@ -204,6 +212,8 @@ funciona OFFLINE              WiFi  botón "Publicar"            (Netlify)
 
 ```
 admin/                  Panel de escritorio Electron (main.cjs, preload.cjs, ui/)
+admin/sugerencias.cjs   Completar vino: Open Food Facts + Gemini
+admin/config.local.example.json  Ejemplo de clave Gemini (copiar a config.local.json)
 admin/pedidos.cjs       Lógica de pedidos: confirmar, descartar, anular, stock
 admin/pedidos.json      Historial y pendientes de pedidos (solo PC)
 admin/sync-server.cjs   Servidor WiFi puerto 3847 (sync catálogo + POST /api/pedido)
@@ -217,6 +227,7 @@ colector/               APK Capacitor (offline, escáner, sync, pedidos c/cola o
 colector/apk/           APK generada (VinosColector-debug.apk)
 netlify.toml            Deploy automático en Netlify
 Abrir panel.bat         Doble clic: levanta dev server + panel Electron
+branding/icon.svg       Logo (copa dorada) → ícono Electron + Android
 PLAN.md                 Este documento
 README.md               Instrucciones de uso e instalación
 ```
@@ -227,6 +238,7 @@ README.md               Instrucciones de uso e instalación
 |---------|----------|
 | `npm run dev` | Catálogo en http://localhost:5173 |
 | `npm run panel` | Panel de carga (Electron) |
+| `npm run iconos` | Regenera íconos del panel y la APK desde `branding/icon.svg` |
 | `npm run build` | Build de producción (tsc + vite) |
 | `npm run preview` | Previsualizar el build |
 | `cd colector && npm run dev` | APK en modo navegador (prueba en PC) |
@@ -243,4 +255,6 @@ README.md               Instrucciones de uso e instalación
 - [x] Pedidos: código corto WhatsApp + confirmar en panel + historial.
 - [x] APK: cola de pedidos offline + aviso de pedido duplicado/confirmado.
 - [x] Instalar APK actualizada en el celular y probar sync / pedidos.
+- [x] Sugerir datos de vino: Open Food Facts (código) + Gemini (IA).
 - [ ] Publicar catálogo (con código en WhatsApp) a Netlify.
+- [ ] Configurar `admin/config.local.json` con clave Gemini (gratis).

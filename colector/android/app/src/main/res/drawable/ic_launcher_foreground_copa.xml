@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Fondo oscuro (queda detrás del safe zone del adaptive icon) -->
+    <path
+        android:fillColor="#0e0a0c"
+        android:pathData="M0,0h108v108h-108z" />
+    <!-- Copa dorada centrada (mismo logo del navbar / favicon) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#d4af53"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M38,28h32l-2.6,21.5a13.5,13.5 0 0 1 -26.8,0z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#d4af53"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round"
+        android:pathData="M54,62v13" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#d4af53"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round"
+        android:pathData="M45,75h18" />
+</vector>

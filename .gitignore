@@ -11,6 +11,16 @@ node_modules
 dist
 dist-ssr
 *.local
+admin/config.local.json
+*.jks
+*.keystore
+keystore.properties
+colector/android/keystore.properties
+colector/android/app/*.keystore
+colector/android/app/*.jks
+release/
+dist-panel/
+
 
 # Android / Capacitor
 colector/android/app/build

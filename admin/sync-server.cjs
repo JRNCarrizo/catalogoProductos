@@ -102,7 +102,7 @@ function fusionarCatalogo(catalogoPc, catalogoCel) {
 /**
  * Servidor HTTP local para que el celular sincronice el catálogo por WiFi.
  */
-function crearServidorSync({ rutaCatalogo, rutaPedidos, onSync, onPedido }) {
+function crearServidorSync({ rutaCatalogo, rutaPedidos, onSync, onPedido, onSugerir }) {
   let servidor = null
 
   const manejar = async (req, res) => {
@@ -144,6 +144,29 @@ function crearServidorSync({ rutaCatalogo, rutaPedidos, onSync, onPedido }) {
         if (typeof onPedido === 'function') onPedido(resultado.pedidos)
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
         res.end(JSON.stringify({ ok: true, yaEstaba: resultado.yaEstaba, pedidos: resultado.pedidos }))
+        return
+      }
+
+      if (req.method === 'POST' && req.url === '/api/sugerir') {
+        if (typeof onSugerir !== 'function') {
+          res.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8' })
+          res.end(JSON.stringify({ ok: false, error: 'Sugerencias no disponibles en este panel.' }))
+          return
+        }
+        try {
+          const cuerpo = await leerJson(req)
+          const resultado = await onSugerir(cuerpo || {})
+          res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
+          res.end(JSON.stringify(resultado))
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' })
+          res.end(
+            JSON.stringify({
+              ok: false,
+              error: error instanceof Error ? error.message : 'No se pudo sugerir',
+            }),
+          )
+        }
         return
       }
 
