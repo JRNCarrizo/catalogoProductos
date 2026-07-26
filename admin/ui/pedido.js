@@ -6,6 +6,18 @@ function extraerCodigoPedido(texto) {
   return `#${m[1].replace(/\s+/g, '')}`
 }
 
+function precioUnitario(producto, cantidad) {
+  const promo = producto?.precioCaja
+  if (cantidad >= 2 && promo != null && promo !== '' && Number.isFinite(Number(promo)) && Number(promo) >= 0) {
+    return Number(promo)
+  }
+  return Number(producto?.precio) || 0
+}
+
+function subtotalLinea(producto, cantidad) {
+  return precioUnitario(producto, cantidad) * cantidad
+}
+
 function parsearPedido(texto, productos) {
   const codigo = extraerCodigoPedido(texto)
   if (!codigo) {
@@ -35,7 +47,7 @@ function parsearPedido(texto, productos) {
 
   const total = lineas.reduce((acc, linea) => {
     if (!linea.producto) return acc
-    return acc + Number(linea.producto.precio || 0) * linea.cantidad
+    return acc + subtotalLinea(linea.producto, linea.cantidad)
   }, 0)
 
   return { codigo, lineas, total, errores }

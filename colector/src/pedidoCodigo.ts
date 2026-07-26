@@ -48,10 +48,22 @@ export function parsearPedido(texto: string, productos: Producto[]): PedidoResue
 
   const total = lineas.reduce((acc, linea) => {
     if (!linea.producto) return acc
-    return acc + linea.producto.precio * linea.cantidad
+    return acc + subtotalLinea(linea.producto, linea.cantidad)
   }, 0)
 
   return { codigo, lineas, total, errores }
+}
+
+function precioUnitario(producto: Producto, cantidad: number): number {
+  const promo = producto.precioCaja
+  if (cantidad >= 2 && promo != null && Number.isFinite(promo) && promo >= 0) {
+    return promo
+  }
+  return producto.precio || 0
+}
+
+export function subtotalLinea(producto: Producto, cantidad: number): number {
+  return precioUnitario(producto, cantidad) * cantidad
 }
 
 export function etiquetaProducto(producto: Producto): string {

@@ -22,7 +22,7 @@ import {
   sugerirDesdeCodigoBarras,
   sugerirDesdePanel,
 } from './sugerencias'
-import { etiquetaProducto, parsearPedido, type PedidoResuelto } from './pedidoCodigo'
+import { etiquetaProducto, parsearPedido, subtotalLinea, type PedidoResuelto } from './pedidoCodigo'
 import {
   CATALOGO_ONLINE,
   TIPOS,
@@ -819,7 +819,9 @@ function PantallaPedido({
                 const nombre = linea.producto
                   ? etiquetaProducto(linea.producto)
                   : `Producto #${linea.indice} (no encontrado)`
-                const sub = linea.producto ? precio(linea.producto.precio * linea.cantidad) : '—'
+                const sub = linea.producto
+                  ? precio(subtotalLinea(linea.producto, linea.cantidad))
+                  : '—'
                 const stock = linea.producto != null ? ` · stock ${linea.producto.stock}` : ''
                 return `• ${linea.cantidad} × ${nombre} — ${sub}${stock}`
               }),

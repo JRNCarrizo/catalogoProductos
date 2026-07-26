@@ -1,5 +1,5 @@
 import type { ItemCarrito, Producto } from '../types'
-import { precio } from '../lib/formato'
+import { precio, aplicaPromoCantidad, precioUnitario, subtotalLinea } from '../lib/formato'
 import { recurso } from '../lib/rutas'
 import { pedido } from '../lib/whatsapp'
 import { sitio } from '../config/sitio'
@@ -139,7 +139,14 @@ export function PanelPedido({
                         </button>
                       </div>
 
-                      <span className="text-sm font-medium text-oro-200">{precio(producto.precio * cantidad)}</span>
+                      <div className="text-right">
+                        {aplicaPromoCantidad(producto, cantidad) && (
+                          <p className="text-[10px] text-humo">{precio(precioUnitario(producto, cantidad))} c/u</p>
+                        )}
+                        <span className="text-sm font-medium text-oro-200">
+                          {precio(subtotalLinea(producto, cantidad))}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </li>

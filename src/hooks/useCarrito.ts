@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ItemCarrito, Producto } from '../types'
+import { subtotalLinea } from '../lib/formato'
 
 const CLAVE = 'catalogo-vinos:carrito'
 
@@ -91,7 +92,7 @@ export function useCarrito(productos: Producto[]) {
 
   const vaciar = useCallback(() => setCantidades(new Map()), [])
 
-  const total = items.reduce((suma, { producto, cantidad }) => suma + producto.precio * cantidad, 0)
+  const total = items.reduce((suma, { producto, cantidad }) => suma + subtotalLinea(producto, cantidad), 0)
   const unidades = items.reduce((suma, { cantidad }) => suma + cantidad, 0)
 
   return { items, total, unidades, agregar, definirCantidad, quitar, vaciar, cantidades }

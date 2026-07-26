@@ -82,7 +82,7 @@ export function DetalleProducto({ producto, onCerrar, onAgregar }: Props) {
               {enOferta && <span className="text-lg text-humo line-through">{precio(producto.precioAnterior!)}</span>}
               <span className="font-display text-4xl text-oro-200">{precio(producto.precio)}</span>
               {producto.precioCaja !== null && (
-                <span className="text-sm text-humo">· {precio(producto.precioCaja)} c/u si llevás varias</span>
+                <span className="text-sm text-humo">· {precio(producto.precioCaja)} c/u desde 2 unidades</span>
               )}
             </div>
 

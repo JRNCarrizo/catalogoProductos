@@ -201,15 +201,29 @@ function dibujarLista() {
   elementos.contador.textContent = String(estado.catalogo.productos.length)
 }
 
-function dibujarFoto(producto) {
-  if (producto.imagen) {
+async function dibujarFoto(producto) {
+  if (!producto.imagen) {
+    elementos.fotoVista.textContent = 'Sin foto'
+    return
+  }
+
+  elementos.fotoVista.textContent = 'Cargando…'
+  try {
+    const url = await window.panel.urlRecurso(producto.imagen)
+    if (!url) {
+      elementos.fotoVista.textContent = 'Foto no encontrada'
+      return
+    }
     elementos.fotoVista.innerHTML = ''
     const imagen = document.createElement('img')
-    imagen.src = `../../public/${producto.imagen}?v=${Date.now()}`
-    imagen.alt = ''
+    imagen.src = url
+    imagen.alt = producto.nombre || ''
+    imagen.onerror = () => {
+      elementos.fotoVista.textContent = 'No se pudo mostrar'
+    }
     elementos.fotoVista.append(imagen)
-  } else {
-    elementos.fotoVista.textContent = 'Sin foto'
+  } catch {
+    elementos.fotoVista.textContent = 'No se pudo mostrar'
   }
 }
 
@@ -458,13 +472,17 @@ function dibujarPreviewPedido(resuelto) {
       const nombre = linea.producto
         ? etiquetaProducto(linea.producto)
         : `Producto #${linea.indice} (no encontrado)`
-      const subtotal = linea.producto ? Number(linea.producto.precio || 0) * linea.cantidad : 0
+      const subtotal = linea.producto ? subtotalLinea(linea.producto, linea.cantidad) : 0
       const stock = linea.producto != null ? `Stock actual: ${linea.producto.stock}` : 'Sin stock en catálogo'
+      const promo =
+        linea.producto && linea.cantidad >= 2 && linea.producto.precioCaja != null
+          ? ` · promo ${formatearPesos(precioUnitario(linea.producto, linea.cantidad))} c/u`
+          : ''
       return `<div class="pedido-linea">
         <span class="cant">${linea.cantidad}</span>
         <div>
           <div class="nombre">${nombre}</div>
-          <span class="stock-meta">${stock}</span>
+          <span class="stock-meta">${stock}${promo}</span>
         </div>
         <span class="subtotal">${formatearPesos(subtotal)}</span>
       </div>`

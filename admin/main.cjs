@@ -379,6 +379,32 @@ ipcMain.handle('imagen:elegir', async (_evento, idProducto) => {
   return `img/${nombreArchivo}`
 })
 
+/** Lee una imagen del proyecto y la devuelve como data URL (funciona en .exe y en desarrollo). */
+ipcMain.handle('recursos:url', async (_evento, rutaRelativa) => {
+  const limpia = String(rutaRelativa || '')
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '')
+  if (!limpia || limpia.includes('..')) return ''
+
+  const absoluta = path.join(raizProyecto, 'public', ...limpia.split('/'))
+  try {
+    const buffer = await fs.readFile(absoluta)
+    const ext = path.extname(absoluta).toLowerCase()
+    const mime =
+      {
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.webp': 'image/webp',
+        '.avif': 'image/avif',
+        '.gif': 'image/gif',
+      }[ext] || 'application/octet-stream'
+    return `data:${mime};base64,${buffer.toString('base64')}`
+  } catch {
+    return ''
+  }
+})
+
 ipcMain.handle('sitio:vistaPrevia', async () => {
   await shell.openExternal('http://localhost:5173')
 })

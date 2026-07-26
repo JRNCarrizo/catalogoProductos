@@ -7,6 +7,18 @@ function extraerCodigoPedido(texto) {
   return `#${m[1].replace(/\s+/g, '')}`
 }
 
+function precioUnitario(producto, cantidad) {
+  const promo = producto?.precioCaja
+  if (cantidad >= 2 && promo != null && promo !== '' && Number.isFinite(Number(promo)) && Number(promo) >= 0) {
+    return Number(promo)
+  }
+  return Number(producto?.precio) || 0
+}
+
+function subtotalLinea(producto, cantidad) {
+  return precioUnitario(producto, cantidad) * cantidad
+}
+
 function parsearPedido(texto, productos) {
   const codigo = extraerCodigoPedido(texto)
   if (!codigo) {
@@ -31,12 +43,13 @@ function parsearPedido(texto, productos) {
     }
     const producto = productos[indice - 1] ?? null
     if (!producto) errores.push(`No hay producto #${indice} en el catálogo`)
+    const unitario = producto ? precioUnitario(producto, cantidad) : 0
     lineas.push({
       indice,
       cantidad,
       productoId: producto?.id || null,
       nombre: producto ? [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ') : `#${indice}`,
-      precio: producto ? Number(producto.precio) || 0 : 0,
+      precio: unitario,
       stock: producto ? Number(producto.stock) || 0 : 0,
       producto,
     })

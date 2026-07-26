@@ -85,7 +85,7 @@ export function TarjetaProducto({ producto, enCarrito, onAgregar, onRestar, onVe
             <span className="font-display text-3xl text-oro-200">{precio(producto.precio)}</span>
             {producto.precioCaja !== null && (
               <span className="mt-1 block text-[11px] text-humo">
-                {precio(producto.precioCaja)} c/u si llevás varias
+                {precio(producto.precioCaja)} c/u desde 2 unidades
               </span>
             )}
           </div>

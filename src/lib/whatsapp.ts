@@ -1,6 +1,6 @@
 import { sitio } from '../config/sitio'
 import type { ItemCarrito, Producto } from '../types'
-import { precio } from './formato'
+import { precio, precioUnitario, subtotalLinea } from './formato'
 import { codificarPedido } from './pedidoCodigo'
 
 function enlace(mensaje: string): string {
@@ -27,7 +27,9 @@ export function pedido(
 ): string {
   const lineas = items.map(({ producto, cantidad }) => {
     const etiqueta = [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
-    return `• ${cantidad} x ${etiqueta} — ${precio(producto.precio * cantidad)}`
+    const unitario = precioUnitario(producto, cantidad)
+    const promo = cantidad >= 2 && producto.precioCaja != null ? ` (${precio(unitario)} c/u)` : ''
+    return `• ${cantidad} x ${etiqueta} — ${precio(subtotalLinea(producto, cantidad))}${promo}`
   })
 
   const codigo = codificarPedido(
