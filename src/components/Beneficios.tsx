@@ -10,7 +10,7 @@ const items = [
   {
     Icono: IconoCopa,
     titulo: 'Stock del día',
-    detalle: 'El listado cambia: cuando se acaba, se acaba.',
+    detalle: 'Stock limitado y actualizado. Lo que ves es lo que hay.',
   },
   {
     Icono: IconoCamion,
