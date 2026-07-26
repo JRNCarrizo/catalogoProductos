@@ -58,6 +58,7 @@ export function DetalleProducto({ producto, onCerrar, onAgregar }: Props) {
           <div>
             <p className="text-[11px] tracking-[0.2em] text-oro-300 uppercase">{producto.tipo}</p>
             <h2 className="mt-2 font-display text-4xl leading-tight text-crema">{producto.nombre}</h2>
+            <p className="mt-1 font-display text-2xl leading-snug text-oro-200">{producto.variedad}</p>
             <p className="mt-1 text-humo">
               {producto.bodega} · {producto.region}
             </p>

@@ -102,6 +102,7 @@ export function PanelPedido({
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="truncate font-display text-base leading-tight text-crema">{producto.nombre}</p>
+                        <p className="truncate font-display text-sm text-oro-200">{producto.variedad}</p>
                         <p className="truncate text-xs text-humo">
                           {producto.bodega}
                           {producto.anio ? ` · ${producto.anio}` : ''}

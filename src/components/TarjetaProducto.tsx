@@ -55,8 +55,8 @@ export function TarjetaProducto({ producto, enCarrito, onAgregar, onRestar, onVe
           </button>
         </h3>
 
-        <p className="mt-1 text-sm text-humo">
-          {producto.variedad}
+        <p className="mt-1 text-sm leading-snug text-humo">
+          <span className="font-display text-xl text-oro-200">{producto.variedad}</span>
           {producto.anio ? ` · ${producto.anio}` : ''} · {producto.volumenMl} ml
         </p>
 
