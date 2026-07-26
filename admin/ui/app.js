@@ -30,6 +30,7 @@ const elementos = {
   tituloEditor: $('#titulo-editor'),
   fotoVista: $('#foto-vista'),
   fotoAyuda: $('#foto-ayuda'),
+  autoQuitarFondo: $('#auto-quitar-fondo'),
   btnQuitarFondo: $('#btn-quitar-fondo'),
   aviso: $('#aviso'),
   capaPublicar: $('#capa-publicar'),
@@ -233,11 +234,35 @@ async function dibujarFoto(producto) {
   }
 }
 
+const CLAVE_AUTO_QUITAR_FONDO = 'vinos-panel-auto-quitar-fondo'
+
+function autoQuitarFondoActivo() {
+  return Boolean(elementos.autoQuitarFondo?.checked)
+}
+
+function textoAyudaFoto() {
+  return autoQuitarFondoActivo()
+    ? 'Al elegir una imagen se quita el fondo blanco automáticamente (ideal para fotos de botella).'
+    : 'La foto se guarda tal cual. Podés quitar el fondo después con el botón «Quitar fondo».'
+}
+
 function setProgresoFoto(texto) {
   if (!elementos.fotoAyuda) return
-  elementos.fotoAyuda.textContent =
-    texto ||
-    'Al elegir una imagen se quita el fondo blanco automáticamente (ideal para fotos de botella).'
+  elementos.fotoAyuda.textContent = texto || textoAyudaFoto()
+}
+
+function cargarPreferenciaAutoQuitarFondo() {
+  if (!elementos.autoQuitarFondo) return
+  const guardado = localStorage.getItem(CLAVE_AUTO_QUITAR_FONDO)
+  if (guardado === '0') elementos.autoQuitarFondo.checked = false
+  else if (guardado === '1') elementos.autoQuitarFondo.checked = true
+  setProgresoFoto('')
+}
+
+function guardarPreferenciaAutoQuitarFondo() {
+  if (!elementos.autoQuitarFondo) return
+  localStorage.setItem(CLAVE_AUTO_QUITAR_FONDO, elementos.autoQuitarFondo.checked ? '1' : '0')
+  setProgresoFoto('')
 }
 
 function seleccionar(id) {
@@ -402,6 +427,11 @@ async function elegirFoto() {
     producto.imagen = rutaOriginal
     await dibujarFoto(producto)
     marcarSucio(true)
+
+    if (!autoQuitarFondoActivo()) {
+      avisar('Foto cargada (sin quitar fondo)', 'exito')
+      return
+    }
 
     setProgresoFoto('Quitando el fondo…')
     try {
@@ -895,6 +925,8 @@ $('#btn-sugerir-ia').addEventListener('click', () => void sugerirDatos(true))
 $('#btn-guardar').addEventListener('click', guardar)
 $('#btn-guardar-editor').addEventListener('click', guardar)
 $('#btn-guardar-abajo').addEventListener('click', guardar)
+cargarPreferenciaAutoQuitarFondo()
+elementos.autoQuitarFondo?.addEventListener('change', guardarPreferenciaAutoQuitarFondo)
 $('#btn-foto').addEventListener('click', () => void elegirFoto())
 $('#btn-quitar-fondo').addEventListener('click', () => void quitarFondoFotoActual())
 $('#btn-quitar-foto').addEventListener('click', () => {
