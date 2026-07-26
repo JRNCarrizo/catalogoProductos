@@ -30,7 +30,7 @@ function VisualPortada({
           <img
             src={foto}
             alt={`${sitio.nombre} — portada`}
-            className="relative z-10 h-auto w-[92%] max-w-[22rem] object-contain [filter:drop-shadow(0_18px_14px_rgba(247,241,232,0.35))_drop-shadow(0_8px_10px_rgba(212,175,83,0.2))]"
+            className="relative z-10 h-auto w-[92%] max-w-[22rem] object-contain"
             onError={onError}
           />
         ) : (
@@ -81,9 +81,7 @@ export function Portada({ cantidadEtiquetas, cantidadBodegas }: Props) {
   return (
     <section id="inicio" className="relative overflow-x-clip pt-24 pb-16 sm:pt-28 sm:pb-20 lg:min-h-[38rem] xl:min-h-[44rem]">
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-40 -left-32 size-[34rem] rounded-full bg-vino-700/35 blur-[120px]" />
-        <div className="absolute top-24 -right-24 size-[26rem] rounded-full bg-oro-500/12 blur-[110px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(255,255,255,0.06),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_15%_-10%,rgba(127,29,46,0.35),transparent_50%),radial-gradient(ellipse_at_90%_20%,rgba(212,175,83,0.1),transparent_45%),radial-gradient(circle_at_50%_-10%,rgba(255,255,255,0.06),transparent_60%)]" />
       </div>
 
       <div className="contenedor relative">

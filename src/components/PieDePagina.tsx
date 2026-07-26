@@ -12,10 +12,7 @@ export function PieDePagina({ actualizado }: Props) {
 
   return (
     <footer id="contacto" className="relative overflow-hidden border-t border-white/10">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -bottom-40 left-1/4 size-[28rem] rounded-full bg-vino-700/25 blur-[130px]" />
-        <div className="absolute right-0 bottom-0 size-[20rem] rounded-full bg-oro-500/8 blur-[100px]" />
-      </div>
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_20%_100%,rgba(127,29,46,0.22),transparent_55%),radial-gradient(ellipse_at_100%_80%,rgba(212,175,83,0.06),transparent_45%)]" />
 
       <div className="contenedor pt-16 pb-8 sm:pt-20">
         {/* Bloque principal */}

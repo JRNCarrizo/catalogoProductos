@@ -27,7 +27,7 @@ export function Encabezado({ unidades, onAbrirCarrito }: Props) {
     <header
       className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
         compacto
-          ? 'border-b border-white/10 bg-noche-950/90 backdrop-blur-xl'
+          ? 'border-b border-white/10 bg-noche-950/95 lg:bg-noche-950/90 lg:backdrop-blur-md'
           : 'border-b border-transparent bg-gradient-to-b from-noche-950/80 to-transparent'
       }`}
     >

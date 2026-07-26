@@ -19,7 +19,7 @@ export function CarritoFlotante({ items, unidades, total, onAbrir }: Props) {
       <button
         type="button"
         onClick={onAbrir}
-        className="group flex items-center gap-3 rounded-2xl border border-oro-400/30 bg-noche-850/95 py-2.5 pr-3 pl-2.5 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.85)] backdrop-blur-xl transition hover:border-oro-400/60"
+        className="group flex items-center gap-3 rounded-2xl border border-oro-400/30 bg-noche-850 py-2.5 pr-3 pl-2.5 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.85)] transition hover:border-oro-400/60"
       >
         <span className="relative flex size-12 shrink-0 items-center justify-center rounded-xl bg-vino-600 text-crema transition group-hover:bg-vino-500">
           <IconoCarrito className="size-6" />

@@ -58,7 +58,7 @@ export function Filtros({ filtros, onCambiar, tipos, nombres, resultados }: Prop
   return (
     <div
       ref={barra}
-      className="sticky top-16 z-30 -mx-5 mb-10 border-y border-white/8 bg-noche-950/85 px-5 py-4 backdrop-blur-xl sm:top-18"
+      className="sticky top-16 z-30 -mx-5 mb-10 border-y border-white/8 bg-noche-950/95 px-5 py-4 sm:top-18 lg:bg-noche-950/85 lg:backdrop-blur-md"
     >
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
