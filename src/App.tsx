@@ -17,7 +17,7 @@ import { IconoWhatsApp } from './components/iconos'
 const filtrosIniciales: EstadoFiltros = {
   busqueda: '',
   tipo: 'todos',
-  bodega: 'todas',
+  nombre: 'todos',
   orden: 'destacados',
   soloOfertas: false,
 }
@@ -45,13 +45,20 @@ export default function App() {
     () => [...new Set(publicados.map((producto) => producto.bodega))].sort((a, b) => a.localeCompare(b, 'es')),
     [publicados],
   )
+  const nombres = useMemo(
+    () =>
+      [...new Set(publicados.map((producto) => producto.nombre).filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b, 'es'),
+      ),
+    [publicados],
+  )
 
   const visibles = useMemo(() => {
     const termino = filtros.busqueda.trim().toLowerCase()
 
     const filtrados = publicados.filter((producto) => {
       if (filtros.tipo !== 'todos' && producto.tipo !== filtros.tipo) return false
-      if (filtros.bodega !== 'todas' && producto.bodega !== filtros.bodega) return false
+      if (filtros.nombre !== 'todos' && producto.nombre !== filtros.nombre) return false
       if (filtros.soloOfertas && !(producto.precioAnterior && producto.precioAnterior > producto.precio)) {
         return false
       }
@@ -108,7 +115,7 @@ export default function App() {
               filtros={filtros}
               onCambiar={setFiltros}
               tipos={tipos}
-              bodegas={bodegas}
+              nombres={nombres}
               resultados={visibles.length}
             />
 

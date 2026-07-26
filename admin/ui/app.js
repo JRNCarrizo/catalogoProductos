@@ -120,6 +120,26 @@ function ajustarStock(id, delta) {
   dibujarLista()
 }
 
+function actualizarDatalistNombres() {
+  const lista = $('#nombres-existentes')
+  if (!lista) return
+
+  const nombres = [
+    ...new Set(
+      estado.catalogo.productos
+        .map((producto) => String(producto.nombre || '').trim())
+        .filter(Boolean),
+    ),
+  ].sort((a, b) => a.localeCompare(b, 'es'))
+
+  lista.innerHTML = ''
+  for (const nombre of nombres) {
+    const opcion = document.createElement('option')
+    opcion.value = nombre
+    lista.append(opcion)
+  }
+}
+
 function dibujarLista() {
   const termino = elementos.buscador.value.trim().toLowerCase()
   const visibles = estado.catalogo.productos.filter((producto) =>
@@ -128,6 +148,8 @@ function dibujarLista() {
       .toLowerCase()
       .includes(termino),
   )
+
+  actualizarDatalistNombres()
 
   elementos.lista.innerHTML = ''
   for (const producto of visibles) {

@@ -6,7 +6,7 @@ export type Orden = 'destacados' | 'precio-asc' | 'precio-desc' | 'nombre'
 export interface EstadoFiltros {
   busqueda: string
   tipo: string
-  bodega: string
+  nombre: string
   orden: Orden
   soloOfertas: boolean
 }
@@ -15,7 +15,7 @@ interface Props {
   filtros: EstadoFiltros
   onCambiar: (filtros: EstadoFiltros) => void
   tipos: string[]
-  bodegas: string[]
+  nombres: string[]
   resultados: number
 }
 
@@ -29,7 +29,7 @@ const ordenes: { valor: Orden; texto: string }[] = [
 const claseCampo =
   'w-full rounded-full border border-white/12 bg-noche-850 px-4 py-2.5 text-sm text-crema outline-none transition focus:border-oro-400/60'
 
-export function Filtros({ filtros, onCambiar, tipos, bodegas, resultados }: Props) {
+export function Filtros({ filtros, onCambiar, tipos, nombres, resultados }: Props) {
   const barra = useRef<HTMLDivElement>(null)
   /** Posición en pantalla de la barra antes del cambio, para no perder el punto de vista. */
   const topPrevio = useRef<number | null>(null)
@@ -53,7 +53,7 @@ export function Filtros({ filtros, onCambiar, tipos, bodegas, resultados }: Prop
   }, [filtros, resultados])
 
   const hayFiltros =
-    filtros.busqueda !== '' || filtros.tipo !== 'todos' || filtros.bodega !== 'todas' || filtros.soloOfertas
+    filtros.busqueda !== '' || filtros.tipo !== 'todos' || filtros.nombre !== 'todos' || filtros.soloOfertas
 
   return (
     <div
@@ -75,15 +75,15 @@ export function Filtros({ filtros, onCambiar, tipos, bodegas, resultados }: Prop
 
           <div className="grid grid-cols-2 gap-3 lg:contents">
             <select
-              value={filtros.bodega}
-              onChange={(evento) => actualizar({ bodega: evento.target.value })}
+              value={filtros.nombre}
+              onChange={(evento) => actualizar({ nombre: evento.target.value })}
               className={`${claseCampo} lg:w-52 lg:shrink-0`}
-              aria-label="Filtrar por marca"
+              aria-label="Filtrar por nombre"
             >
-              <option value="todas">Todas las marcas</option>
-              {bodegas.map((bodega) => (
-                <option key={bodega} value={bodega}>
-                  {bodega}
+              <option value="todos">Todos los nombres</option>
+              {nombres.map((nombre) => (
+                <option key={nombre} value={nombre}>
+                  {nombre}
                 </option>
               ))}
             </select>
@@ -132,7 +132,7 @@ export function Filtros({ filtros, onCambiar, tipos, bodegas, resultados }: Prop
               <button
                 type="button"
                 onClick={() =>
-                  cambiar({ busqueda: '', tipo: 'todos', bodega: 'todas', orden: filtros.orden, soloOfertas: false })
+                  cambiar({ busqueda: '', tipo: 'todos', nombre: 'todos', orden: filtros.orden, soloOfertas: false })
                 }
                 className="inline-flex items-center gap-1 text-crema underline decoration-white/30 transition hover:text-oro-200"
               >
