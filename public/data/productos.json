@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-07-26T16:28:34.695Z",
+  "actualizado": "2026-07-26T16:31:06.127Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -1238,7 +1238,7 @@
       "volumenMl": 750,
       "graduacion": 13.5,
       "stock": 1,
-      "destacado": false,
+      "destacado": true,
       "activo": true,
       "codigoBarras": "",
       "imagen": "img/el-enemigo-gran-enemigo-chacayes-cabernet-franc.png",
