@@ -157,7 +157,7 @@ function dibujarLista() {
 
     const meta = document.createElement('span')
     meta.className = 'meta'
-    meta.textContent = [producto.bodega, producto.anio, `$${Number(producto.precio).toLocaleString('es-AR')}`]
+    meta.textContent = [producto.variedad, producto.anio, `$${Number(producto.precio).toLocaleString('es-AR')}`]
       .filter(Boolean)
       .join(' · ')
 
