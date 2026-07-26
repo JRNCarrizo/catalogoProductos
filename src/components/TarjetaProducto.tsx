@@ -17,7 +17,7 @@ export function TarjetaProducto({ producto, enCarrito, onAgregar, onRestar, onVe
   const enOferta = producto.precioAnterior !== null && producto.precioAnterior > producto.precio
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-b from-noche-850 to-noche-900 transition duration-300 hover:-translate-y-1 hover:border-oro-400/30 hover:shadow-[0_24px_48px_-24px_rgba(0,0,0,0.9)]">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-b from-noche-850 to-noche-900 transition duration-300 [content-visibility:auto] [contain-intrinsic-size:auto_30rem] hover:-translate-y-1 hover:border-oro-400/30 hover:shadow-[0_24px_48px_-24px_rgba(0,0,0,0.9)]">
       <button
         type="button"
         onClick={() => onVerDetalle(producto)}

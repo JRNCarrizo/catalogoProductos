@@ -10,15 +10,13 @@ interface Props {
 }
 
 /**
- * Escena de botella: el color de la foto se difumina en un óvalo suave
- * (sin marco cuadrado) y se disuelve hacia el fondo de la tarjeta.
+ * Escena de botella con aura y sombra hechas solo con degradados.
+ * Sin filtros (blur/drop-shadow) ni máscaras: en el catálogo hay decenas
+ * de tarjetas y en celulares eso agota la memoria de la GPU.
  */
 export function FotoProducto({ producto, variante = 'tarjeta', className = '' }: Props) {
   const esDetalle = variante === 'detalle'
   const src = producto.imagen ? recurso(producto.imagen) : ''
-  const mascara = esDetalle
-    ? 'radial-gradient(ellipse 72% 68% at 50% 42%, #000 18%, transparent 72%)'
-    : 'radial-gradient(ellipse 78% 72% at 50% 38%, #000 12%, transparent 70%)'
 
   return (
     <div
@@ -28,23 +26,15 @@ export function FotoProducto({ producto, variante = 'tarjeta', className = '' }:
         className,
       ].join(' ')}
     >
-      {/* Aura ovalada — sin borde cuadrado */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{ WebkitMaskImage: mascara, maskImage: mascara }}
-      >
-        {src ? (
-          <img
-            src={src}
-            alt=""
-            className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-3xl saturate-[0.9]"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,rgba(255,255,255,0.1),transparent_65%)]" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-b from-vino-900/20 via-transparent to-noche-950/40" />
-      </div>
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_58%_at_50%_36%,rgba(212,175,83,0.13),rgba(127,29,46,0.12)_38%,transparent_72%)]"
+      />
+
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-[24%] bottom-[8%] h-8 bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,rgba(0,0,0,0.55),transparent_72%)]"
+      />
 
       <div className="relative z-[1] flex h-full w-full items-end justify-center px-6 pb-5 pt-6">
         {src ? (
@@ -52,10 +42,10 @@ export function FotoProducto({ producto, variante = 'tarjeta', className = '' }:
             src={src}
             alt={`${producto.bodega} ${producto.nombre}`}
             loading={esDetalle ? 'eager' : 'lazy'}
+            decoding="async"
             className={[
               'h-full w-auto max-w-[72%] object-contain object-bottom',
-              'drop-shadow-[0_20px_36px_rgba(0,0,0,0.7)]',
-              'transition duration-500 will-change-transform group-hover:scale-[1.04] group-hover:-translate-y-0.5',
+              'transition-transform duration-500 group-hover:scale-[1.04]',
             ].join(' ')}
           />
         ) : (
@@ -63,22 +53,18 @@ export function FotoProducto({ producto, variante = 'tarjeta', className = '' }:
             tipo={producto.tipo}
             bodega={producto.bodega}
             variedad={producto.variedad}
-            className={[
-              'h-full w-auto transition duration-500',
-              'group-hover:scale-[1.04] group-hover:-translate-y-0.5',
-            ].join(' ')}
+            className="h-full w-auto transition-transform duration-500 group-hover:scale-[1.04]"
           />
         )}
       </div>
 
-      {/* Disolución hacia el cuerpo de la tarjeta / modal */}
       <div
         aria-hidden
         className={[
-          'pointer-events-none absolute inset-x-0 bottom-0 h-20',
+          'pointer-events-none absolute inset-x-0 bottom-0 h-16',
           esDetalle
-            ? 'bg-gradient-to-t from-noche-900 via-noche-900/70 to-transparent'
-            : 'bg-gradient-to-t from-noche-850 via-noche-850/75 to-transparent',
+            ? 'bg-gradient-to-t from-noche-900 to-transparent'
+            : 'bg-gradient-to-t from-noche-850 to-transparent',
         ].join(' ')}
       />
     </div>
