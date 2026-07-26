@@ -26,7 +26,13 @@ export function BotellaIlustrada({ tipo, bodega, variedad, className }: Props) {
     .join('')
 
   return (
-    <svg viewBox="0 0 120 260" className={className} role="img" aria-label={`${variedad} ${tipo}`}>
+    <svg
+      viewBox="0 0 120 260"
+      className={className}
+      style={{ aspectRatio: '120 / 260' }}
+      role="img"
+      aria-label={`${variedad} ${tipo}`}
+    >
       <defs>
         <linearGradient id={`brillo-${tipo}`} x1="0" x2="1">
           <stop offset="0%" stopColor="#000" stopOpacity="0.45" />

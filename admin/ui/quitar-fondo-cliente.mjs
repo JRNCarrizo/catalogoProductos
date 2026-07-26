@@ -273,6 +273,46 @@ function quitarFondoClaro(imageData, umbral = 56) {
   for (let idx = 0; idx < total; idx++) data[idx * 4 + 3] = alphaFinal[idx]
 }
 
+/** Recorta el espacio transparente para que la base visual coincida con el PNG. */
+function recortarTransparencia(canvas, imageData) {
+  const { data, width, height } = imageData
+  let minX = width
+  let minY = height
+  let maxX = -1
+  let maxY = -1
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (data[(y * width + x) * 4 + 3] <= 10) continue
+      if (x < minX) minX = x
+      if (x > maxX) maxX = x
+      if (y < minY) minY = y
+      if (y > maxY) maxY = y
+    }
+  }
+
+  if (maxX < 0) return canvas
+
+  const anchoVisible = maxX - minX + 1
+  const margen = Math.min(16, Math.max(6, Math.round(anchoVisible * 0.03)))
+  const izquierda = Math.max(0, minX - margen)
+  const arriba = Math.max(0, minY - margen)
+  const derecha = Math.min(width - 1, maxX + margen)
+  const abajo = Math.min(height - 1, maxY + margen)
+  const ancho = derecha - izquierda + 1
+  const alto = abajo - arriba + 1
+
+  if (izquierda === 0 && arriba === 0 && ancho === width && alto === height) return canvas
+
+  const recortado = document.createElement('canvas')
+  recortado.width = ancho
+  recortado.height = alto
+  const ctx = recortado.getContext('2d')
+  if (!ctx) return canvas
+  ctx.drawImage(canvas, izquierda, arriba, ancho, alto, 0, 0, ancho, alto)
+  return recortado
+}
+
 async function procesarBlob(entrada, onProgreso) {
   if (typeof onProgreso === 'function') onProgreso('Quitando el fondo blanco…')
 
@@ -289,9 +329,10 @@ async function procesarBlob(entrada, onProgreso) {
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
   quitarFondoClaro(imageData)
   ctx.putImageData(imageData, 0, 0)
+  const resultadoCanvas = recortarTransparencia(canvas, imageData)
 
   const blob = await new Promise((resolver, rechazar) => {
-    canvas.toBlob((resultado) => {
+    resultadoCanvas.toBlob((resultado) => {
       if (resultado) resolver(resultado)
       else rechazar(new Error('No se pudo generar el PNG'))
     }, 'image/png')
