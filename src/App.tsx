@@ -25,6 +25,11 @@ const filtrosIniciales: EstadoFiltros = {
 export default function App() {
   const { cargando, error, catalogo } = useCatalogo()
   const productos = catalogo?.productos ?? []
+  /** Solo los publicados: inactivos quedan en el JSON para panel/APK, no en la web. */
+  const publicados = useMemo(
+    () => productos.filter((producto) => producto.activo !== false),
+    [productos],
+  )
 
   const [filtros, setFiltros] = useState<EstadoFiltros>(filtrosIniciales)
   const [detalle, setDetalle] = useState<Producto | null>(null)
@@ -33,18 +38,18 @@ export default function App() {
   const carrito = useCarrito(productos)
 
   const tipos = useMemo(
-    () => [...new Set(productos.map((producto) => producto.tipo))],
-    [productos],
+    () => [...new Set(publicados.map((producto) => producto.tipo))],
+    [publicados],
   )
   const bodegas = useMemo(
-    () => [...new Set(productos.map((producto) => producto.bodega))].sort((a, b) => a.localeCompare(b, 'es')),
-    [productos],
+    () => [...new Set(publicados.map((producto) => producto.bodega))].sort((a, b) => a.localeCompare(b, 'es')),
+    [publicados],
   )
 
   const visibles = useMemo(() => {
     const termino = filtros.busqueda.trim().toLowerCase()
 
-    const filtrados = productos.filter((producto) => {
+    const filtrados = publicados.filter((producto) => {
       if (filtros.tipo !== 'todos' && producto.tipo !== filtros.tipo) return false
       if (filtros.bodega !== 'todas' && producto.bodega !== filtros.bodega) return false
       if (filtros.soloOfertas && !(producto.precioAnterior && producto.precioAnterior > producto.precio)) {
@@ -71,7 +76,7 @@ export default function App() {
           return b.precio - a.precio
       }
     })
-  }, [productos, filtros])
+  }, [publicados, filtros])
 
   const agregar = (producto: Producto) => {
     carrito.agregar(producto)
@@ -87,7 +92,7 @@ export default function App() {
       <Encabezado unidades={carrito.unidades} onAbrirCarrito={() => setPedidoAbierto(true)} />
 
       <main>
-        <Portada cantidadEtiquetas={productos.length} cantidadBodegas={bodegas.length} />
+        <Portada cantidadEtiquetas={publicados.length} cantidadBodegas={bodegas.length} />
         <Beneficios />
 
         <section className="contenedor py-16">
@@ -97,7 +102,8 @@ export default function App() {
             <p className="mt-4 text-humo">Sumá botellas al pedido y envialo por WhatsApp.</p>
           </div>
 
-          <div id="catalogo" className="scroll-mt-20 sm:scroll-mt-24">
+          {/* El alto mínimo evita que la página se acorte al filtrar y salte el scroll. */}
+          <div id="catalogo" className="min-h-[85vh] scroll-mt-20 sm:scroll-mt-24">
             <Filtros
               filtros={filtros}
               onCambiar={setFiltros}

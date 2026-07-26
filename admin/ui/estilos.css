@@ -30,55 +30,108 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 14px 20px;
+  gap: 20px;
+  padding: 12px 22px;
   border-bottom: 1px solid var(--borde);
-  background: var(--panel);
+  background:
+    linear-gradient(180deg, rgba(28, 20, 24, 0.98), rgba(14, 10, 12, 0.96)),
+    var(--panel);
+  backdrop-filter: blur(12px);
 }
 
 .marca {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+}
+
+.marca-icono {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 83, 0.35);
+  background: rgba(212, 175, 83, 0.08);
+  color: var(--oro);
+  flex-shrink: 0;
+}
+
+.marca-icono svg {
+  width: 20px;
+  height: 20px;
 }
 
 .marca strong {
   display: block;
   font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .marca small {
+  display: block;
+  margin-top: 2px;
   color: var(--humo);
   font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
 }
 
 .punto {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: var(--oro);
-  box-shadow: 0 0 12px rgba(212, 175, 83, 0.6);
+  box-shadow: 0 0 0 2px var(--panel), 0 0 10px rgba(212, 175, 83, 0.55);
 }
 
 .punto.sucio {
   background: var(--vino-claro);
-  box-shadow: 0 0 12px rgba(163, 43, 64, 0.6);
+  box-shadow: 0 0 0 2px var(--panel), 0 0 10px rgba(163, 43, 64, 0.55);
 }
 
 .acciones {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.acciones-grupo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.acciones-principales {
+  gap: 6px;
+  padding: 4px;
+  border-color: rgba(212, 175, 83, 0.18);
+  background: rgba(212, 175, 83, 0.05);
 }
 
 .boton {
-  padding: 9px 16px;
+  padding: 8px 14px;
   border-radius: 999px;
   border: 1px solid var(--borde);
   background: var(--panel-alto);
   color: var(--crema);
   font-size: 13px;
+  font-family: inherit;
   cursor: pointer;
-  transition: 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
 }
 
 .boton:hover {
@@ -91,12 +144,16 @@ body {
 }
 
 .boton.primario {
-  background: var(--vino);
+  background: linear-gradient(180deg, var(--vino-claro), var(--vino));
   border-color: transparent;
+  color: var(--crema);
+  font-weight: 600;
+  box-shadow: 0 8px 18px -12px rgba(127, 29, 46, 0.9);
 }
 
 .boton.primario:hover {
-  background: var(--vino-claro);
+  background: linear-gradient(180deg, #b7334a, var(--vino-claro));
+  border-color: transparent;
 }
 
 .boton.oro {
@@ -108,6 +165,14 @@ body {
 
 .boton.fantasma {
   background: transparent;
+  border-color: transparent;
+  color: var(--humo);
+}
+
+.boton.fantasma:hover {
+  color: var(--crema);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(212, 175, 83, 0.3);
 }
 
 .boton.peligro {
@@ -119,6 +184,12 @@ body {
 .boton.compacto {
   padding: 7px 12px;
   font-size: 12px;
+}
+
+.boton.activo-nav {
+  border-color: rgba(212, 175, 83, 0.45);
+  color: var(--oro);
+  background: rgba(212, 175, 83, 0.12);
 }
 
 .cuerpo {
@@ -275,6 +346,22 @@ textarea {
 .marca-destacado {
   color: var(--oro);
   font-size: 11px;
+}
+
+.marca-oculto {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #c9b8a8;
+  font-weight: 500;
+}
+
+.lista li.oculto-web {
+  opacity: 0.55;
 }
 
 .sin-stock {
@@ -488,15 +575,21 @@ textarea {
 
 .pedidos-top {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
-  padding: 22px 28px 8px;
+  gap: 24px;
+  padding: 16px 28px 14px;
   flex-shrink: 0;
+  border-bottom: 1px solid var(--borde);
+}
+
+.pedidos-titulo {
+  min-width: 0;
+  flex: 1;
 }
 
 .pedidos-eyebrow {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -505,56 +598,71 @@ textarea {
 
 .pedidos-top h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 500;
   letter-spacing: -0.02em;
 }
 
 .pedidos-sub {
-  margin: 8px 0 0;
-  max-width: 520px;
+  margin: 6px 0 0;
+  max-width: 480px;
   color: var(--humo);
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.45;
+}
+
+.pedidos-top-derecha {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .pedidos-tabs {
   display: flex;
   gap: 4px;
-  padding: 0 28px;
-  border-bottom: 1px solid var(--borde);
-  flex-shrink: 0;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .pedidos-tab {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
+  padding: 8px 14px;
   border: 0;
+  border-radius: 999px;
   background: transparent;
   color: var(--humo);
-  font-size: 14px;
+  font-size: 13px;
   font-family: inherit;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.15s, background 0.15s;
 }
 
 .pedidos-tab:hover {
   color: var(--crema);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .pedidos-tab.activa {
-  color: var(--oro);
-  border-bottom-color: var(--oro);
+  color: var(--noche);
+  background: var(--oro);
+  font-weight: 600;
+}
+
+.pedidos-tab.activa .pedidos-badge {
+  background: rgba(14, 10, 12, 0.18);
+  color: var(--noche);
 }
 
 .pedidos-cuerpo {
   flex: 1;
   min-height: 0;
-  padding: 20px 28px 28px;
+  padding: 16px 28px 24px;
   overflow: hidden;
 }
 
@@ -924,18 +1032,24 @@ textarea {
   background: transparent;
 }
 
-.boton.activo-nav {
-  border-color: rgba(212, 175, 83, 0.55);
-  color: var(--oro);
-  background: rgba(212, 175, 83, 0.08);
-}
-
 @media (max-width: 900px) {
   .pedidos-nuevo-grid,
   .pedidos-nuevo-grid.sin-preview {
     grid-template-columns: 1fr;
     justify-content: stretch;
     overflow: auto;
+  }
+
+  .pedidos-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .pedidos-top-derecha {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 }
 

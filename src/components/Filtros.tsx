@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react'
 import { IconoBuscar, IconoCerrar } from './iconos'
 
 export type Orden = 'destacados' | 'precio-asc' | 'precio-desc' | 'nombre'
@@ -29,12 +30,36 @@ const claseCampo =
   'w-full rounded-full border border-white/12 bg-noche-850 px-4 py-2.5 text-sm text-crema outline-none transition focus:border-oro-400/60'
 
 export function Filtros({ filtros, onCambiar, tipos, bodegas, resultados }: Props) {
-  const actualizar = (cambios: Partial<EstadoFiltros>) => onCambiar({ ...filtros, ...cambios })
+  const barra = useRef<HTMLDivElement>(null)
+  /** Posición en pantalla de la barra antes del cambio, para no perder el punto de vista. */
+  const topPrevio = useRef<number | null>(null)
+
+  const cambiar = (siguientes: EstadoFiltros) => {
+    topPrevio.current = barra.current?.getBoundingClientRect().top ?? null
+    onCambiar(siguientes)
+  }
+
+  const actualizar = (cambios: Partial<EstadoFiltros>) => cambiar({ ...filtros, ...cambios })
+
+  // Al cambiar la cantidad de resultados la página cambia de alto y el navegador
+  // reajusta el scroll. Devolvemos la barra al mismo lugar de la pantalla.
+  useLayoutEffect(() => {
+    const anterior = topPrevio.current
+    topPrevio.current = null
+    if (anterior == null || !barra.current) return
+
+    const diferencia = barra.current.getBoundingClientRect().top - anterior
+    if (Math.abs(diferencia) > 1) window.scrollBy({ top: diferencia, behavior: 'instant' })
+  }, [filtros, resultados])
+
   const hayFiltros =
     filtros.busqueda !== '' || filtros.tipo !== 'todos' || filtros.bodega !== 'todas' || filtros.soloOfertas
 
   return (
-    <div className="sticky top-16 z-30 -mx-5 mb-10 border-y border-white/8 bg-noche-950/85 px-5 py-4 backdrop-blur-xl sm:top-18">
+    <div
+      ref={barra}
+      className="sticky top-16 z-30 -mx-5 mb-10 border-y border-white/8 bg-noche-950/85 px-5 py-4 backdrop-blur-xl sm:top-18"
+    >
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <label className="relative w-full lg:min-w-0 lg:flex-1">
@@ -107,7 +132,7 @@ export function Filtros({ filtros, onCambiar, tipos, bodegas, resultados }: Prop
               <button
                 type="button"
                 onClick={() =>
-                  onCambiar({ busqueda: '', tipo: 'todos', bodega: 'todas', orden: filtros.orden, soloOfertas: false })
+                  cambiar({ busqueda: '', tipo: 'todos', bodega: 'todas', orden: filtros.orden, soloOfertas: false })
                 }
                 className="inline-flex items-center gap-1 text-crema underline decoration-white/30 transition hover:text-oro-200"
               >

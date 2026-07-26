@@ -9,19 +9,30 @@
   <body>
     <header class="barra">
       <div class="marca">
-        <span class="punto"></span>
+        <span class="marca-icono" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 4h10l-1 8a4 4 0 0 1-8 0Z" />
+            <path d="M12 12v5" />
+            <path d="M9 17h6" />
+          </svg>
+          <span class="punto"></span>
+        </span>
         <div>
-          <strong>Panel del catálogo</strong>
+          <strong>Vinos de Remate</strong>
           <small id="estado-archivo">Cargando…</small>
         </div>
       </div>
 
       <div class="acciones">
-        <button id="btn-pedidos" class="boton fantasma" type="button">Pedidos</button>
-        <button id="btn-sync" class="boton fantasma" type="button">Sync celular</button>
-        <button id="btn-vista-previa" class="boton fantasma" type="button">Ver el sitio</button>
-        <button id="btn-guardar" class="boton" type="button">Guardar cambios</button>
-        <button id="btn-publicar" class="boton primario" type="button">Publicar</button>
+        <div class="acciones-grupo">
+          <button id="btn-pedidos" class="boton fantasma" type="button">Pedidos</button>
+          <button id="btn-sync" class="boton fantasma" type="button">Sync celular</button>
+          <button id="btn-vista-previa" class="boton fantasma" type="button">Ver el sitio</button>
+        </div>
+        <div class="acciones-grupo acciones-principales">
+          <button id="btn-guardar" class="boton" type="button">Guardar</button>
+          <button id="btn-publicar" class="boton primario" type="button">Publicar</button>
+        </div>
       </div>
     </header>
 
@@ -148,6 +159,10 @@
 
             <div class="campo ancho fila">
               <label class="interruptor">
+                <input name="activo" type="checkbox" checked />
+                <span>Publicado en la web</span>
+              </label>
+              <label class="interruptor">
                 <input name="destacado" type="checkbox" />
                 <span>Mostrar como destacado</span>
               </label>
@@ -171,29 +186,30 @@
 
     <section class="vista-pedidos oculto" id="vista-pedidos">
       <div class="pedidos-top">
-        <div>
+        <div class="pedidos-titulo">
           <p class="pedidos-eyebrow">Gestión</p>
           <h1>Pedidos</h1>
           <p class="pedidos-sub">
             Pegá el WhatsApp, revisá el detalle y confirmá para descontar stock. El historial queda en esta PC.
           </p>
         </div>
-        <button type="button" id="btn-cerrar-pedidos" class="boton fantasma">← Volver al catálogo</button>
+        <div class="pedidos-top-derecha">
+          <button type="button" id="btn-cerrar-pedidos" class="boton fantasma compacto">← Catálogo</button>
+          <nav class="pedidos-tabs" id="pedidos-tabs">
+            <button type="button" class="pedidos-tab activa" data-tab="nuevo">
+              Nuevo
+            </button>
+            <button type="button" class="pedidos-tab" data-tab="pendientes">
+              Pendientes
+              <span class="pedidos-badge" id="pedido-count-pen">0</span>
+            </button>
+            <button type="button" class="pedidos-tab" data-tab="historial">
+              Historial
+              <span class="pedidos-badge suave" id="pedido-count-hist">0</span>
+            </button>
+          </nav>
+        </div>
       </div>
-
-      <nav class="pedidos-tabs" id="pedidos-tabs">
-        <button type="button" class="pedidos-tab activa" data-tab="nuevo">
-          Nuevo pedido
-        </button>
-        <button type="button" class="pedidos-tab" data-tab="pendientes">
-          Pendientes
-          <span class="pedidos-badge" id="pedido-count-pen">0</span>
-        </button>
-        <button type="button" class="pedidos-tab" data-tab="historial">
-          Historial
-          <span class="pedidos-badge suave" id="pedido-count-hist">0</span>
-        </button>
-      </nav>
 
       <div class="pedidos-cuerpo">
         <section class="pedidos-tab-panel activa" data-panel="nuevo">

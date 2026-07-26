@@ -28,6 +28,7 @@ import {
   TIPOS,
   buscarPorCodigo,
   generarId,
+  estaActivo,
   precio,
   productoVacio,
   type Catalogo,
@@ -383,14 +384,20 @@ export default function App() {
         ) : (
           <div className="lista">
             {visibles.map((producto) => (
-              <article key={producto.id} className="tarjeta">
+              <article
+                key={producto.id}
+                className={`tarjeta${estaActivo(producto) ? '' : ' oculto-web'}`}
+              >
                 <button
                   type="button"
                   className="info"
                   style={{ background: 'transparent', border: 0, color: 'inherit', textAlign: 'left', padding: 0 }}
                   onClick={() => setPantalla({ tipo: 'editor', esNuevo: false, producto: { ...producto } })}
                 >
-                  <p className="nombre">{producto.nombre}</p>
+                  <p className="nombre">
+                    {producto.nombre}
+                    {!estaActivo(producto) && <span className="marca-oculto">oculto</span>}
+                  </p>
                   <p className="meta">
                     {[producto.bodega, producto.anio, precio(producto.precio)].filter(Boolean).join(' · ')}
                     {producto.codigoBarras ? ` · ${producto.codigoBarras}` : ''}
@@ -1090,6 +1097,15 @@ function Editor({
           <label className="campo">
             <span>Maridaje</span>
             <input value={producto.maridaje} onChange={(e) => set('maridaje', e.target.value)} />
+          </label>
+
+          <label className="interruptor">
+            <input
+              type="checkbox"
+              checked={estaActivo(producto)}
+              onChange={(e) => set('activo', e.target.checked)}
+            />
+            <span>Publicado en la web</span>
           </label>
 
           <button type="submit" className="boton bloque primario" disabled={sugeriendo}>

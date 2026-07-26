@@ -18,6 +18,11 @@ export interface Producto {
   graduacion: number | null
   stock: number
   destacado: boolean
+  /**
+   * Si es false, no se muestra en la web (sigue en panel/APK).
+   * Si falta el campo, se trata como activo.
+   */
+  activo?: boolean
   /** Código de barras / EAN. Varios productos (cosechas) pueden compartir el mismo. */
   codigoBarras: string
   /** URL o ruta relativa de la foto. Vacío muestra una etiqueta ilustrada. */

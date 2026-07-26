@@ -59,6 +59,7 @@ const productoVacio = () => ({
   graduacion: null,
   stock: 0,
   destacado: false,
+  activo: true,
   codigoBarras: '',
   imagen: '',
   descripcion: '',
@@ -130,6 +131,7 @@ function dibujarLista() {
     const item = document.createElement('li')
     item.dataset.id = producto.id
     if (producto.id === estado.seleccionId) item.classList.add('activo')
+    if (producto.activo === false) item.classList.add('oculto-web')
 
     const info = document.createElement('div')
     info.className = 'info'
@@ -142,6 +144,12 @@ function dibujarLista() {
       estrella.className = 'marca-destacado'
       estrella.textContent = '★'
       nombre.append(estrella)
+    }
+    if (producto.activo === false) {
+      const marca = document.createElement('span')
+      marca.className = 'marca-oculto'
+      marca.textContent = 'oculto'
+      nombre.append(marca)
     }
 
     const meta = document.createElement('span')
@@ -232,6 +240,7 @@ function seleccionar(id) {
   campos.notas.value = (producto.notas ?? []).join(', ')
   campos.maridaje.value = producto.maridaje ?? ''
   campos.destacado.checked = Boolean(producto.destacado)
+  campos.activo.checked = producto.activo !== false
 
   dibujarFoto(producto)
   dibujarLista()
@@ -268,6 +277,7 @@ function leerFormulario() {
     .filter(Boolean)
   producto.maridaje = campos.maridaje.value.trim()
   producto.destacado = campos.destacado.checked
+  producto.activo = campos.activo.checked
 
   elementos.tituloEditor.textContent = producto.nombre || 'Nuevo vino'
   marcarSucio(true)

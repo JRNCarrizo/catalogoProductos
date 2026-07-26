@@ -58,6 +58,7 @@ function normalizarProducto(producto) {
       producto.graduacion === null || producto.graduacion === '' ? null : Number(producto.graduacion),
     stock: Math.max(0, Number(producto.stock) || 0),
     destacado: Boolean(producto.destacado),
+    activo: producto.activo !== false,
     codigoBarras: String(producto.codigoBarras || ''),
     imagen: String(producto.imagen || ''),
     descripcion: String(producto.descripcion || ''),

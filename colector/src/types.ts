@@ -15,6 +15,8 @@ export interface Producto {
   graduacion: number | null
   stock: number
   destacado: boolean
+  /** false = oculto en la web. Si falta, se trata como activo. */
+  activo?: boolean
   codigoBarras: string
   imagen: string
   descripcion: string
@@ -59,6 +61,7 @@ export function productoVacio(parcial: Partial<Producto> = {}): Producto {
     graduacion: null,
     stock: 0,
     destacado: false,
+    activo: true,
     codigoBarras: '',
     imagen: '',
     descripcion: '',
@@ -66,6 +69,11 @@ export function productoVacio(parcial: Partial<Producto> = {}): Producto {
     maridaje: '',
     ...parcial,
   }
+}
+
+/** Productos sin el campo (catálogos viejos) se consideran activos. */
+export function estaActivo(producto: Pick<Producto, 'activo'>): boolean {
+  return producto.activo !== false
 }
 
 export function generarId(producto: Producto, existentes: Set<string>): string {
