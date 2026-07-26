@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-07-26T05:27:58.356Z",
+  "actualizado": "2026-07-26T13:14:13.979Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -31,7 +31,7 @@
     {
       "id": "esmeralda-rosado",
       "nombre": "Esmeralda Rosado",
-      "bodega": "",
+      "bodega": "Bodega Esmeralda",
       "tipo": "Tinto",
       "variedad": "",
       "anio": null,
@@ -79,7 +79,7 @@
     {
       "id": "tikal-ernesto-catena-vineyards-tikal-jubilo",
       "nombre": "Tikal Jubilo",
-      "bodega": "Tikal (Ernesto Catena Vineyards)",
+      "bodega": "Ernesto Catena Vineyards",
       "tipo": "Tinto",
       "variedad": "Malbec, Cabernet Sauvignon",
       "anio": null,
@@ -287,7 +287,7 @@
     {
       "id": "bodegas-esmeralda-estiba-malbec",
       "nombre": "Estiba Malbec",
-      "bodega": "Bodegas Esmeralda",
+      "bodega": "Bodega Esmeralda",
       "tipo": "Tinto",
       "variedad": "Malbec",
       "anio": null,
@@ -755,7 +755,7 @@
     {
       "id": "bodega-catena-zapata-malbec-argentino",
       "nombre": "Malbec Argentino",
-      "bodega": "Bodega Catena Zapata",
+      "bodega": "Catena Zapata",
       "tipo": "Tinto",
       "variedad": "Malbec",
       "anio": null,
