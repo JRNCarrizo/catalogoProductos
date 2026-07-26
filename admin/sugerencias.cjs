@@ -202,20 +202,38 @@ Reglas:
 
 Pista: ${pista}`
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(clave)}`
-  const respuesta = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.4, maxOutputTokens: 800 },
-    }),
-  })
+  // Los modelos 2.x ya no aceptan cuentas nuevas. Priorizamos el modelo
+  // liviano actual y usamos Flash estable como respaldo.
+  const modelos = ['gemini-3.1-flash-lite', 'gemini-3.5-flash']
+  let datos = null
+  let ultimoError = ''
 
-  const datos = await respuesta.json()
-  if (!respuesta.ok) {
-    const msg = datos?.error?.message || `Gemini HTTP ${respuesta.status}`
-    throw new Error(msg)
+  for (const modelo of modelos) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${encodeURIComponent(clave)}`
+    const respuesta = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.4, maxOutputTokens: 800 },
+      }),
+    })
+
+    datos = await respuesta.json()
+    if (respuesta.ok) break
+
+    ultimoError = datos?.error?.message || `Gemini HTTP ${respuesta.status}`
+    const sinCupo =
+      respuesta.status === 429 ||
+      /quota|rate.?limit|exceeded/i.test(ultimoError) ||
+      /limit:\s*0/i.test(ultimoError)
+    // Si el modelo no existe o no tiene cupo, probamos el siguiente.
+    if (respuesta.status === 404 || sinCupo) continue
+    throw new Error(mensajeErrorGemini(ultimoError))
+  }
+
+  if (!datos?.candidates?.[0]) {
+    throw new Error(mensajeErrorGemini(ultimoError || 'No hubo respuesta de Gemini.'))
   }
 
   const texto = datos?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('\n') || ''
@@ -241,6 +259,17 @@ Pista: ${pista}`
     sugerencia,
     aviso: 'Sugerencia de IA. Revisá siempre antes de guardar (puede aproximar si el vino es poco conocido).',
   }
+}
+
+function mensajeErrorGemini(msg) {
+  const texto = String(msg || '')
+  if (/limit:\s*0|exceeded your current quota|rate.?limit/i.test(texto)) {
+    return (
+      'Gemini sin cupo disponible por ahora. Esperá un minuto y reintentá, ' +
+      'o revisá el plan y los límites en https://aistudio.google.com/.'
+    )
+  }
+  return texto
 }
 
 /**

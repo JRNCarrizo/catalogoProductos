@@ -478,6 +478,24 @@ textarea {
   font-weight: 500;
 }
 
+.editor-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--borde);
+}
+
+.editor-pie .ayuda {
+  margin: 0;
+}
+
+.editor-pie .boton.primario {
+  min-width: 160px;
+}
+
 .grilla {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

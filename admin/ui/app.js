@@ -794,6 +794,8 @@ $('#btn-eliminar').addEventListener('click', eliminar)
 $('#btn-sugerir-codigo').addEventListener('click', () => void sugerirDatos(false))
 $('#btn-sugerir-ia').addEventListener('click', () => void sugerirDatos(true))
 $('#btn-guardar').addEventListener('click', guardar)
+$('#btn-guardar-editor').addEventListener('click', guardar)
+$('#btn-guardar-abajo').addEventListener('click', guardar)
 $('#btn-foto').addEventListener('click', elegirFoto)
 $('#btn-quitar-foto').addEventListener('click', () => {
   const producto = productoActual()
