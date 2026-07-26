@@ -169,11 +169,15 @@ export function PanelPedido({
                 Enviar por WhatsApp
               </a>
 
-              <div className="mt-2.5 flex items-center justify-between gap-3 text-[11px] text-humo">
-                <button type="button" onClick={onVaciar} className="underline decoration-white/30 hover:text-crema">
+              <div className="mt-2.5 flex items-center justify-between gap-3 text-humo">
+                <button
+                  type="button"
+                  onClick={onVaciar}
+                  className="rounded-full border border-white/15 px-4 py-2.5 text-sm text-crema/90 transition hover:border-oro-400/40 hover:text-oro-200"
+                >
                   Vaciar
                 </button>
-                <span className="truncate text-right">{sitio.aclaracionPrecios}</span>
+                <span className="truncate text-right text-[11px]">{sitio.aclaracionPrecios}</span>
               </div>
             </footer>
           </>
