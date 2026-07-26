@@ -81,19 +81,19 @@ export function PanelPedido({
             <ul className="scrollbar-fina min-h-0 flex-1 divide-y divide-white/8 overflow-y-auto px-5">
               {items.map(({ producto, cantidad }) => (
                 <li key={producto.id} className="flex gap-3 py-3.5">
-                  <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-noche-850">
+                  <div className="relative flex size-16 shrink-0 items-end justify-center overflow-hidden rounded-lg bg-[radial-gradient(ellipse_at_50%_20%,rgba(255,255,255,0.08),transparent_60%)]">
                     {producto.imagen ? (
                       <img
                         src={recurso(producto.imagen)}
                         alt=""
-                        className="h-full w-full rounded-lg object-contain p-1"
+                        className="max-h-[90%] max-w-[78%] object-contain object-bottom pb-1 drop-shadow-md"
                       />
                     ) : (
                       <BotellaIlustrada
                         tipo={producto.tipo}
                         bodega={producto.bodega}
                         variedad={producto.variedad}
-                        className="h-14"
+                        className="mb-1 h-14"
                       />
                     )}
                   </div>

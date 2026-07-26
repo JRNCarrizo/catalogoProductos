@@ -1,9 +1,8 @@
 import type { Producto } from '../types'
 import { precio } from '../lib/formato'
-import { recurso } from '../lib/rutas'
 import { consultaProducto } from '../lib/whatsapp'
 import { useSuperposicion } from '../hooks/useSuperposicion'
-import { BotellaIlustrada } from './BotellaIlustrada'
+import { FotoProducto } from './FotoProducto'
 import { IconoCarrito, IconoCerrar, IconoWhatsApp } from './iconos'
 
 interface Props {
@@ -54,22 +53,7 @@ export function DetalleProducto({ producto, onCerrar, onAgregar }: Props) {
         </button>
 
         <div className="grid gap-8 p-6 sm:p-10 md:grid-cols-[0.85fr_1.15fr]">
-          <div className="flex items-center justify-center rounded-2xl bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,0.08),transparent_65%)] p-6">
-            {producto.imagen ? (
-              <img
-                src={recurso(producto.imagen)}
-                alt={`${producto.bodega} ${producto.nombre}`}
-                className="max-h-96 w-full object-contain"
-              />
-            ) : (
-              <BotellaIlustrada
-                tipo={producto.tipo}
-                bodega={producto.bodega}
-                variedad={producto.variedad}
-                className="h-80"
-              />
-            )}
-          </div>
+          <FotoProducto producto={producto} variante="detalle" />
 
           <div>
             <p className="text-[11px] tracking-[0.2em] text-oro-300 uppercase">{producto.tipo}</p>

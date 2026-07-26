@@ -1,7 +1,6 @@
 import type { Producto } from '../types'
 import { porcentajeDescuento, precio } from '../lib/formato'
-import { recurso } from '../lib/rutas'
-import { BotellaIlustrada } from './BotellaIlustrada'
+import { FotoProducto } from './FotoProducto'
 import { IconoCarrito } from './iconos'
 
 interface Props {
@@ -22,26 +21,12 @@ export function TarjetaProducto({ producto, enCarrito, onAgregar, onRestar, onVe
       <button
         type="button"
         onClick={() => onVerDetalle(producto)}
-        className="relative flex h-64 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.07),transparent_65%)] px-6 pt-6"
+        className="relative block w-full overflow-hidden"
         aria-label={`Ver detalle de ${producto.nombre}`}
       >
-        {producto.imagen ? (
-          <img
-            src={recurso(producto.imagen)}
-            alt={`${producto.bodega} ${producto.nombre}`}
-            loading="lazy"
-            className="h-full w-full object-contain transition duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <BotellaIlustrada
-            tipo={producto.tipo}
-            bodega={producto.bodega}
-            variedad={producto.variedad}
-            className="h-full transition duration-500 group-hover:scale-105"
-          />
-        )}
+        <FotoProducto producto={producto} variante="tarjeta" />
 
-        <div className="absolute top-4 left-4 flex flex-col items-start gap-2">
+        <div className="absolute top-4 left-4 z-[2] flex flex-col items-start gap-2">
           {enOferta && (
             <span className="rounded-full bg-vino-600 px-2.5 py-1 text-[11px] font-semibold text-crema">
               -{porcentajeDescuento(producto.precio, producto.precioAnterior!)}%
@@ -55,7 +40,7 @@ export function TarjetaProducto({ producto, enCarrito, onAgregar, onRestar, onVe
         </div>
 
         {sinStock && (
-          <span className="absolute inset-x-4 top-1/2 -translate-y-1/2 rounded-md bg-noche-950/85 py-2 text-center text-xs tracking-[0.2em] text-humo uppercase">
+          <span className="absolute inset-x-4 top-1/2 z-[2] -translate-y-1/2 rounded-md bg-noche-950/85 py-2 text-center text-xs tracking-[0.2em] text-humo uppercase">
             Sin stock
           </span>
         )}

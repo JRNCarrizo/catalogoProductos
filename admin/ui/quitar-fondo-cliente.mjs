@@ -1,6 +1,6 @@
 /**
  * Quita fondos blancos/claros de fotos de botella (local, sin IA).
- * Usa flood-fill desde los bordes para no “agujerear” etiquetas claras.
+ * Usa flood-fill desde los bordes + limpieza de halo blanco en el contorno.
  */
 function dataUrlABlob(dataUrl) {
   const partes = String(dataUrl).split(',')
@@ -32,27 +32,173 @@ function distanciaAlBlanco(r, g, b) {
   return Math.sqrt(dr * dr + dg * dg + db * db)
 }
 
+function luminancia(r, g, b) {
+  return 0.299 * r + 0.587 * g + 0.114 * b
+}
+
+function saturacion(r, g, b) {
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  return max === 0 ? 0 : (max - min) / max
+}
+
 /** Fondo blanco / gris claro de estudio (incluye sombra suave desaturada). */
 function esColorDeFondo(r, g, b, umbral) {
   const d = distanciaAlBlanco(r, g, b)
   if (d <= umbral) return true
 
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  const luminancia = 0.299 * r + 0.587 * g + 0.114 * b
-  const saturacion = max === 0 ? 0 : (max - min) / max
+  const lum = luminancia(r, g, b)
+  const sat = saturacion(r, g, b)
 
-  // Sombras suaves sobre papel blanco: claras y poco saturadas.
-  if (luminancia >= 205 && saturacion <= 0.14 && d <= umbral + 55) return true
-  if (luminancia >= 175 && saturacion <= 0.08 && d <= umbral + 80) return true
+  if (lum >= 200 && sat <= 0.16 && d <= umbral + 60) return true
+  if (lum >= 170 && sat <= 0.09 && d <= umbral + 85) return true
   return false
+}
+
+function vecinosTransparentes(data, width, height, x, y) {
+  let n = 0
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx === 0 && dy === 0) continue
+      const nx = x + dx
+      const ny = y + dy
+      if (nx < 0 || ny < 0 || nx >= width || ny >= height) {
+        n++
+        continue
+      }
+      if (data[(ny * width + nx) * 4 + 3] === 0) n++
+    }
+  }
+  return n
+}
+
+/**
+ * Quita el “halo” blanco del anti-aliasing: descompone el color
+ * como si estuviera mezclado sobre fondo blanco.
+ */
+function descontaminarBlancoEnBorde(data, width, height) {
+  const total = width * height
+  const alphaNuevo = new Uint8Array(total)
+  const rgbNuevo = new Uint8ClampedArray(total * 3)
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = y * width + x
+      const i = idx * 4
+      const a = data[i + 3]
+      if (a === 0) {
+        alphaNuevo[idx] = 0
+        continue
+      }
+
+      const r = data[i]
+      const g = data[i + 1]
+      const b = data[i + 2]
+      const borde = vecinosTransparentes(data, width, height, x, y)
+
+      if (!borde) {
+        alphaNuevo[idx] = a
+        rgbNuevo[idx * 3] = r
+        rgbNuevo[idx * 3 + 1] = g
+        rgbNuevo[idx * 3 + 2] = b
+        continue
+      }
+
+      // Cobertura estimada respecto al blanco (anti-alias / fringe).
+      const maxDiff = Math.max(255 - r, 255 - g, 255 - b)
+      let cobertura = maxDiff / 255
+
+      // Halos casi blancos: fuera.
+      if (cobertura < 0.06 || (luminancia(r, g, b) >= 232 && saturacion(r, g, b) <= 0.12)) {
+        alphaNuevo[idx] = 0
+        continue
+      }
+
+      // En el borde, un poco más agresivo si aún es claro.
+      if (luminancia(r, g, b) >= 210 && saturacion(r, g, b) <= 0.18) {
+        cobertura *= 0.55
+      } else if (luminancia(r, g, b) >= 185 && saturacion(r, g, b) <= 0.14) {
+        cobertura *= 0.75
+      }
+
+      // Más vecinos transparentes → más probabilidad de fringe.
+      if (borde >= 4) cobertura *= 0.85
+      if (borde >= 6) cobertura *= 0.8
+
+      if (cobertura < 0.05) {
+        alphaNuevo[idx] = 0
+        continue
+      }
+
+      // Desmezclar del blanco: C = F*α + 255*(1-α)
+      const inv = 1 / Math.max(cobertura, 0.08)
+      const nr = Math.max(0, Math.min(255, Math.round(255 + (r - 255) * inv)))
+      const ng = Math.max(0, Math.min(255, Math.round(255 + (g - 255) * inv)))
+      const nb = Math.max(0, Math.min(255, Math.round(255 + (b - 255) * inv)))
+
+      alphaNuevo[idx] = Math.max(0, Math.min(255, Math.round(a * cobertura)))
+      rgbNuevo[idx * 3] = nr
+      rgbNuevo[idx * 3 + 1] = ng
+      rgbNuevo[idx * 3 + 2] = nb
+    }
+  }
+
+  for (let idx = 0; idx < total; idx++) {
+    const i = idx * 4
+    data[i] = rgbNuevo[idx * 3]
+    data[i + 1] = rgbNuevo[idx * 3 + 1]
+    data[i + 2] = rgbNuevo[idx * 3 + 2]
+    data[i + 3] = alphaNuevo[idx]
+  }
+}
+
+/**
+ * Erosión suave: come 1–2 px de borde claro (el “mal cortado”).
+ */
+function erosionarHaloClaro(data, width, height, umbral) {
+  const total = width * height
+  const marcar = new Uint8Array(total)
+
+  for (let pass = 0; pass < 2; pass++) {
+    marcar.fill(0)
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
+        const idx = y * width + x
+        const i = idx * 4
+        if (data[i + 3] === 0) continue
+
+        const borde = vecinosTransparentes(data, width, height, x, y)
+        if (!borde) continue
+
+        const r = data[i]
+        const g = data[i + 1]
+        const b = data[i + 2]
+        const d = distanciaAlBlanco(r, g, b)
+        const lum = luminancia(r, g, b)
+        const sat = saturacion(r, g, b)
+
+        // Píxeles claros / desaturados pegados al vacío = halo.
+        const esHalo =
+          d <= umbral + 36 ||
+          (lum >= 198 && sat <= 0.2) ||
+          (lum >= 175 && sat <= 0.12 && borde >= 2) ||
+          (borde >= 5 && lum >= 160 && sat <= 0.22)
+
+        if (esHalo) marcar[idx] = 1
+      }
+    }
+
+    for (let idx = 0; idx < total; idx++) {
+      if (marcar[idx]) data[idx * 4 + 3] = 0
+    }
+  }
 }
 
 /**
  * @param {ImageData} imageData
- * @param {number} umbral distancia máxima al blanco (0–255). ~48 cubre blanco sucio/grisáceo.
+ * @param {number} umbral distancia máxima al blanco (0–255).
  */
-function quitarFondoClaro(imageData, umbral = 48) {
+function quitarFondoClaro(imageData, umbral = 56) {
   const { data, width, height } = imageData
   const total = width * height
   const visitado = new Uint8Array(total)
@@ -73,7 +219,6 @@ function quitarFondoClaro(imageData, umbral = 48) {
     cola[fin++] = idx
   }
 
-  // Solo el fondo conectado a los bordes (protege blancos internos de la etiqueta).
   for (let x = 0; x < width; x++) {
     encolar(x, 0)
     encolar(x, height - 1)
@@ -94,48 +239,38 @@ function quitarFondoClaro(imageData, umbral = 48) {
     encolar(x, y - 1)
   }
 
-  // Limpieza de manchas: píxeles claros casi rodeados de transparencia.
-  for (let pass = 0; pass < 2; pass++) {
-    for (let y = 1; y < height - 1; y++) {
-      for (let x = 1; x < width - 1; x++) {
-        const idx = y * width + x
-        const i = idx * 4
-        if (data[i + 3] === 0) continue
-        if (!esColorDeFondo(data[i], data[i + 1], data[i + 2], umbral + 22)) continue
+  // Expansión del vacío hacia píxeles claros del contorno (anti-alias).
+  erosionarHaloClaro(data, width, height, umbral)
 
-        let vecinosTransp = 0
-        if (data[((y - 1) * width + x) * 4 + 3] === 0) vecinosTransp++
-        if (data[((y + 1) * width + x) * 4 + 3] === 0) vecinosTransp++
-        if (data[(y * width + x - 1) * 4 + 3] === 0) vecinosTransp++
-        if (data[(y * width + x + 1) * 4 + 3] === 0) vecinosTransp++
-        if (vecinosTransp >= 3) data[i + 3] = 0
-      }
-    }
-  }
+  // Descontaminar blanco restante en el borde.
+  descontaminarBlancoEnBorde(data, width, height)
 
-  // Suavizado solo en el borde (píxeles claros pegados a transparente).
+  // Suavizado final de alpha solo en el perímetro.
+  const alphaFinal = new Uint8Array(total)
+  for (let idx = 0; idx < total; idx++) alphaFinal[idx] = data[idx * 4 + 3]
+
   for (let y = 1; y < height - 1; y++) {
     for (let x = 1; x < width - 1; x++) {
       const idx = y * width + x
       const i = idx * 4
       if (data[i + 3] === 0) continue
+      const borde = vecinosTransparentes(data, width, height, x, y)
+      if (!borde) continue
 
-      let vecinosTransp = 0
-      if (data[((y - 1) * width + x) * 4 + 3] === 0) vecinosTransp++
-      if (data[((y + 1) * width + x) * 4 + 3] === 0) vecinosTransp++
-      if (data[(y * width + x - 1) * 4 + 3] === 0) vecinosTransp++
-      if (data[(y * width + x + 1) * 4 + 3] === 0) vecinosTransp++
-      if (!vecinosTransp) continue
+      const r = data[i]
+      const g = data[i + 1]
+      const b = data[i + 2]
+      const d = distanciaAlBlanco(r, g, b)
+      if (d >= umbral + 40 && luminancia(r, g, b) < 200) continue
 
-      const d = distanciaAlBlanco(data[i], data[i + 1], data[i + 2])
-      if (d >= umbral + 28) continue
-      // Más blanco / más vecinos transparentes → más transparente el borde.
-      const t = Math.min(1, d / (umbral + 28))
-      const factor = 0.35 + 0.65 * t
-      const vecinoFactor = 1 - vecinosTransp * 0.12
-      data[i + 3] = Math.max(0, Math.min(255, Math.round(data[i + 3] * factor * vecinoFactor)))
+      const t = Math.min(1, d / (umbral + 40))
+      const factor = 0.25 + 0.75 * t
+      const vecinoFactor = Math.max(0.35, 1 - borde * 0.08)
+      alphaFinal[idx] = Math.max(0, Math.min(255, Math.round(data[i + 3] * factor * vecinoFactor)))
     }
   }
+
+  for (let idx = 0; idx < total; idx++) data[idx * 4 + 3] = alphaFinal[idx]
 }
 
 async function procesarBlob(entrada, onProgreso) {

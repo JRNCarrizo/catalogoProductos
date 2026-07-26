@@ -376,7 +376,28 @@ ipcMain.handle('sugerencias:estado', async () => {
   return { geminiConfigurado: Boolean(clave) }
 })
 
-ipcMain.handle('imagen:elegir', async (_evento, idProducto) => {
+/** Borra una imagen de public/img si es segura y no es el archivo que se quiere conservar. */
+async function borrarImagenLocal(rutaRelativa, exceptoAbsoluta = '') {
+  const vieja = String(rutaRelativa || '')
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '')
+  if (!vieja.startsWith('img/') || vieja.includes('..')) return false
+
+  const absoluta = path.resolve(path.join(raizProyecto, 'public', ...vieja.split('/')))
+  if (exceptoAbsoluta && absoluta === path.resolve(exceptoAbsoluta)) return false
+
+  const relativaAImg = path.relative(path.resolve(carpetaImagenes), absoluta)
+  if (!relativaAImg || relativaAImg.startsWith('..') || path.isAbsolute(relativaAImg)) return false
+
+  try {
+    await fs.unlink(absoluta)
+    return true
+  } catch {
+    return false
+  }
+}
+
+ipcMain.handle('imagen:elegir', async (_evento, idProducto, reemplazar) => {
   const resultado = await dialog.showOpenDialog(ventana, {
     title: 'Elegir foto de la botella',
     filters: [{ name: 'Imágenes', extensions: ['jpg', 'jpeg', 'png', 'webp', 'avif'] }],
@@ -389,9 +410,11 @@ ipcMain.handle('imagen:elegir', async (_evento, idProducto) => {
   const extension = path.extname(origen).toLowerCase() || '.jpg'
   const base = String(idProducto || `foto-${Date.now()}`).replace(/[^\w.-]+/g, '-')
   const nombreArchivo = `${base}${extension}`
+  const destino = path.join(carpetaImagenes, nombreArchivo)
 
   await fs.mkdir(carpetaImagenes, { recursive: true })
-  await fs.copyFile(origen, path.join(carpetaImagenes, nombreArchivo))
+  await fs.copyFile(origen, destino)
+  await borrarImagenLocal(reemplazar, destino)
 
   return `img/${nombreArchivo}`
 })
@@ -406,15 +429,15 @@ ipcMain.handle('imagen:guardar-png', async (_evento, { idProducto, base64, reemp
 
   await fs.mkdir(carpetaImagenes, { recursive: true })
   await fs.writeFile(destino, Buffer.from(limpio, 'base64'))
-
-  // Si había otra extensión (jpg/webp), la borramos para no dejar duplicados.
-  const vieja = String(reemplazar || '').replace(/\\/g, '/').replace(/^\/+/, '')
-  if (vieja.startsWith('img/') && !vieja.endsWith('.png') && !vieja.includes('..')) {
-    const absoluta = path.join(raizProyecto, 'public', ...vieja.split('/'))
-    if (absoluta !== destino) await fs.unlink(absoluta).catch(() => {})
-  }
+  await borrarImagenLocal(reemplazar, destino)
 
   return `img/${nombreArchivo}`
+})
+
+/** Borra una foto del proyecto (al quitarla del producto). */
+ipcMain.handle('imagen:borrar', async (_evento, rutaRelativa) => {
+  await borrarImagenLocal(rutaRelativa)
+  return true
 })
 
 /** Lee una imagen del proyecto y la devuelve como data URL (funciona en .exe y en desarrollo). */

@@ -382,16 +382,20 @@ function nuevo() {
 }
 
 function eliminar() {
-  const producto = productoActual()
-  if (!producto) return
-  if (!confirm(`¿Eliminar "${producto.nombre || 'este vino'}" del catálogo?`)) return
+  void (async () => {
+    const producto = productoActual()
+    if (!producto) return
+    if (!confirm(`¿Eliminar "${producto.nombre || 'este vino'}" del catálogo?`)) return
 
-  estado.catalogo.productos = estado.catalogo.productos.filter((item) => item !== producto)
-  estado.seleccionId = null
-  elementos.formulario.classList.add('oculto')
-  elementos.editorVacio.classList.remove('oculto')
-  marcarSucio(true)
-  dibujarLista()
+    const foto = producto.imagen || ''
+    estado.catalogo.productos = estado.catalogo.productos.filter((item) => item !== producto)
+    estado.seleccionId = null
+    elementos.formulario.classList.add('oculto')
+    elementos.editorVacio.classList.remove('oculto')
+    if (foto) await window.panel.borrarImagen(foto).catch(() => {})
+    marcarSucio(true)
+    dibujarLista()
+  })()
 }
 
 async function procesarQuitarFondo(producto, rutaActual) {
@@ -421,7 +425,8 @@ async function elegirFoto() {
   if (elementos.btnQuitarFondo) elementos.btnQuitarFondo.disabled = true
 
   try {
-    const rutaOriginal = await window.panel.elegirImagen(producto.id)
+    const anterior = producto.imagen || ''
+    const rutaOriginal = await window.panel.elegirImagen(producto.id, anterior)
     if (!rutaOriginal) return
 
     producto.imagen = rutaOriginal
@@ -930,11 +935,15 @@ elementos.autoQuitarFondo?.addEventListener('change', guardarPreferenciaAutoQuit
 $('#btn-foto').addEventListener('click', () => void elegirFoto())
 $('#btn-quitar-fondo').addEventListener('click', () => void quitarFondoFotoActual())
 $('#btn-quitar-foto').addEventListener('click', () => {
-  const producto = productoActual()
-  if (!producto) return
-  producto.imagen = ''
-  void dibujarFoto(producto)
-  marcarSucio(true)
+  void (async () => {
+    const producto = productoActual()
+    if (!producto) return
+    const anterior = producto.imagen || ''
+    producto.imagen = ''
+    if (anterior) await window.panel.borrarImagen(anterior).catch(() => {})
+    await dibujarFoto(producto)
+    marcarSucio(true)
+  })()
 })
 $('#btn-vista-previa').addEventListener('click', () => window.panel.vistaPrevia())
 $('#btn-pedidos').addEventListener('click', () => void mostrarPedidos())
