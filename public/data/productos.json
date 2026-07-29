@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-07-26T20:05:34.055Z",
+  "actualizado": "2026-07-29T01:02:55.220Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -864,7 +864,7 @@
       "id": "catena-zapata-alamos-malbec-maceracion-atenuada",
       "nombre": "Alamos",
       "bodega": "Alamos",
-      "tipo": "Tinto",
+      "tipo": "Rosado",
       "variedad": "Malbec Maceracion Atenuada",
       "anio": null,
       "region": "Mendoza",
@@ -1159,7 +1159,7 @@
       "precioCaja": 22000,
       "volumenMl": 750,
       "graduacion": 14.5,
-      "stock": 8,
+      "stock": 10,
       "destacado": false,
       "activo": true,
       "codigoBarras": "",
@@ -1379,6 +1379,58 @@
         "taninos de grano fino"
       ],
       "maridaje": "ojo de bife a la parrilla, cordero patagónico, quesos de pasta dura"
+    },
+    {
+      "id": "luca-wines-luca",
+      "nombre": "Luca",
+      "bodega": "Luca Wines",
+      "tipo": "Tinto",
+      "variedad": "Pinot Noir",
+      "anio": null,
+      "region": "Uco Valley, Mendoza",
+      "precio": 25000,
+      "precioAnterior": null,
+      "precioCaja": null,
+      "volumenMl": 750,
+      "graduacion": 14.5,
+      "stock": 2,
+      "destacado": false,
+      "activo": true,
+      "codigoBarras": "",
+      "imagen": "img/luca-wines-luca.png",
+      "descripcion": "Este Pinot de alta gama destaca por su elegancia y complejidad, proveniente de viñedos de altura en el Valle de Uco. Ofrece una estructura firme con taninos sedosos y un final persistente que refleja la pureza del terroir mendocino.",
+      "notas": [
+        "frutos negros maduros",
+        "notas florales a violetas",
+        "toques de especias y roble"
+      ],
+      "maridaje": "ojo de bife a la parrilla, cordero patagónico, pastas con salsas intensas"
+    },
+    {
+      "id": "luca-wines-luca-2",
+      "nombre": "Luca",
+      "bodega": "Luca Wines",
+      "tipo": "Tinto",
+      "variedad": "Syrah",
+      "anio": null,
+      "region": "Valle de Uco, Mendoza",
+      "precio": 20000,
+      "precioAnterior": null,
+      "precioCaja": null,
+      "volumenMl": 750,
+      "graduacion": 14.5,
+      "stock": 2,
+      "destacado": false,
+      "activo": true,
+      "codigoBarras": "",
+      "imagen": "img/luca-wines-luca-2.png",
+      "descripcion": "Este Syrah de alta gama expresa la elegancia y potencia del terroir de altura en el Valle de Uco. Se destaca por su estructura equilibrada, taninos sedosos y una complejidad aromática que refleja un cuidado proceso de elaboración artesanal.",
+      "notas": [
+        "frutos negros maduros",
+        "pimienta negra",
+        "notas especiadas y ahumadas"
+      ],
+      "maridaje": "carnes rojas a la parrilla, cordero asado, guisos intensos, quesos duros"
     }
   ]
 }
