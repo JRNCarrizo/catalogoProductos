@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-07-29T23:10:04.872Z",
+  "actualizado": "2026-08-02T13:56:46.559Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -743,7 +743,7 @@
       "precioCaja": null,
       "volumenMl": 750,
       "graduacion": 13.5,
-      "stock": 6,
+      "stock": 7,
       "destacado": false,
       "activo": true,
       "codigoBarras": "",
@@ -977,7 +977,7 @@
       "precioCaja": null,
       "volumenMl": 750,
       "graduacion": 13.5,
-      "stock": 14,
+      "stock": 15,
       "destacado": false,
       "activo": true,
       "codigoBarras": "",
@@ -1081,7 +1081,7 @@
       "precioCaja": null,
       "volumenMl": 750,
       "graduacion": 13.9,
-      "stock": 7,
+      "stock": 8,
       "destacado": false,
       "activo": true,
       "codigoBarras": "",
@@ -1107,7 +1107,7 @@
       "precioCaja": null,
       "volumenMl": 750,
       "graduacion": 13.5,
-      "stock": 41,
+      "stock": 42,
       "destacado": true,
       "activo": true,
       "codigoBarras": "",
@@ -1133,7 +1133,7 @@
       "precioCaja": 12000,
       "volumenMl": 750,
       "graduacion": 13.5,
-      "stock": 36,
+      "stock": 37,
       "destacado": true,
       "activo": true,
       "codigoBarras": "",
@@ -1431,6 +1431,58 @@
         "notas especiadas y ahumadas"
       ],
       "maridaje": "carnes rojas a la parrilla, cordero asado, guisos intensos, quesos duros"
+    },
+    {
+      "id": "angelica",
+      "nombre": "Angelica",
+      "bodega": "Catena Zapata",
+      "tipo": "Tinto",
+      "variedad": "Cabernet Franc",
+      "anio": null,
+      "region": "Mendoza",
+      "precio": 17000,
+      "precioAnterior": null,
+      "precioCaja": null,
+      "volumenMl": 750,
+      "graduacion": 13.5,
+      "stock": 1,
+      "destacado": false,
+      "activo": true,
+      "codigoBarras": "",
+      "imagen": "img/angelica.png",
+      "descripcion": "Este ejemplar de alta gama destaca por su elegancia y complejidad, reflejando la excelencia del terroir de altura mendocino. Presenta una estructura equilibrada con taninos sedosos y un final persistente que invita a disfrutarlo en ocasiones especiales.",
+      "notas": [
+        "frutos rojos maduros",
+        "pimiento asado",
+        "notas especiadas y minerales"
+      ],
+      "maridaje": "carnes rojas a la parrilla, cordero asado, quesos duros, guisos de caza"
+    },
+    {
+      "id": "saint-felicien",
+      "nombre": "Saint Felicien",
+      "bodega": "Catena Zapata",
+      "tipo": "Tinto",
+      "variedad": "Cabernet Merlot",
+      "anio": null,
+      "region": "Mendoza",
+      "precio": 5000,
+      "precioAnterior": null,
+      "precioCaja": null,
+      "volumenMl": 750,
+      "graduacion": 13.5,
+      "stock": 1,
+      "destacado": false,
+      "activo": true,
+      "codigoBarras": "",
+      "imagen": "",
+      "descripcion": "Este blend clásico de la línea Saint Felicien combina la estructura del Cabernet Sauvignon con la suavidad y elegancia del Merlot. Es un vino equilibrado y sofisticado, con una crianza en roble que aporta complejidad y un final persistente en boca.",
+      "notas": [
+        "Frutos rojos maduros",
+        "Especias",
+        "Vainilla"
+      ],
+      "maridaje": "carnes rojas a la parrilla, guisos de legumbres, quesos duros, pastas con salsas intensas"
     }
   ]
 }
