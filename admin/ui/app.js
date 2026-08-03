@@ -967,7 +967,22 @@ $('#btn-quitar-foto').addEventListener('click', () => {
     marcarSucio(true)
   })()
 })
+async function exportarPdfCatalogo() {
+  try {
+    avisar('Generando PDF…', 'exito')
+    const resultado = await window.panel.exportarPdf()
+    if (resultado?.cancelado) {
+      avisar('Exportación cancelada')
+      return
+    }
+    avisar(`PDF listo · ${resultado.productos} productos con stock`, 'exito')
+  } catch (error) {
+    avisar(error instanceof Error ? error.message : 'No se pudo generar el PDF', 'error')
+  }
+}
+
 $('#btn-vista-previa').addEventListener('click', () => window.panel.vistaPrevia())
+$('#btn-pdf').addEventListener('click', () => void exportarPdfCatalogo())
 $('#btn-pedidos').addEventListener('click', () => void mostrarPedidos())
 $('#btn-sync').addEventListener('click', () => void mostrarSync())
 elementos.syncInfo.addEventListener('click', () => void mostrarSync())

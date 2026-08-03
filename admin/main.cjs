@@ -14,6 +14,7 @@ const {
 } = require('./pedidos.cjs')
 const { sugerirDatosProducto, leerClaveGemini, configurarRutaGemini } = require('./sugerencias.cjs')
 const { crearServidorUi } = require('./ui-server.cjs')
+const { exportarCatalogoPdf } = require('./catalogo-pdf.cjs')
 const QRCode = require('qrcode')
 
 let raizProyecto = path.join(__dirname, '..')
@@ -471,6 +472,19 @@ ipcMain.handle('sitio:vistaPrevia', async () => {
 })
 
 ipcMain.handle('sync:estado', async () => estadoSyncCompleto())
+
+ipcMain.handle('catalogo:pdf', async () => {
+  const contenido = await fs.readFile(rutaCatalogo, 'utf8')
+  const catalogo = JSON.parse(contenido)
+  const resultado = await exportarCatalogoPdf({
+    catalogo,
+    ventanaPadre: ventana && !ventana.isDestroyed() ? ventana : null,
+  })
+  if (!resultado.cancelado && resultado.ruta) {
+    shell.showItemInFolder(resultado.ruta)
+  }
+  return resultado
+})
 
 ipcMain.handle('sitio:publicar', async (_evento, mensaje) => {
   const pasos = []

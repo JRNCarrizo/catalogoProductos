@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('panel', {
   borrarImagen: (rutaRelativa) => ipcRenderer.invoke('imagen:borrar', rutaRelativa),
   urlRecurso: (rutaRelativa) => ipcRenderer.invoke('recursos:url', rutaRelativa),
   vistaPrevia: () => ipcRenderer.invoke('sitio:vistaPrevia'),
+  exportarPdf: () => ipcRenderer.invoke('catalogo:pdf'),
   publicar: (mensaje) => ipcRenderer.invoke('sitio:publicar', mensaje),
   estadoSync: () => ipcRenderer.invoke('sync:estado'),
   leerPedidos: () => ipcRenderer.invoke('pedidos:leer'),
