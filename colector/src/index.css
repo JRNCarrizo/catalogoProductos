@@ -158,7 +158,7 @@ textarea {
 
 .acciones-barra {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .accion {
@@ -167,13 +167,13 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 10px 8px;
+  gap: 5px;
+  padding: 10px 4px;
   border-radius: 14px;
   border: 1px solid var(--borde);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
   color: var(--crema);
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 500;
   cursor: pointer;
   transition:

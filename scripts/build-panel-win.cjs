@@ -19,7 +19,12 @@ const exe = path.join(unpacked, 'Vinos de Remate Panel.exe')
 function correr(comando, args) {
   const r = spawnSync(comando, args, {
     cwd: raiz,
-    env: { ...process.env, CSC_IDENTITY_AUTO_DISCOVERY: 'false' },
+    env: {
+      ...process.env,
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false',
+      // Evita spawn UNKNOWN al generar/firmar el uninstaller NSIS en Windows.
+      __COMPAT_LAYER: 'RunAsInvoker',
+    },
     stdio: 'inherit',
     shell: true,
   })

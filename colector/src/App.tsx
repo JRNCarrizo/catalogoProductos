@@ -23,6 +23,7 @@ import {
   sugerirDesdePanel,
 } from './sugerencias'
 import { etiquetaProducto, parsearPedido, armarPedidoDesdeLineas, subtotalLinea, type PedidoResuelto } from './pedidoCodigo'
+import { compartirCatalogoPdf } from './catalogoPdf'
 import {
   CATALOGO_ONLINE,
   TIPOS,
@@ -224,6 +225,19 @@ export default function App() {
     }
   }
 
+  const exportarPdf = async () => {
+    try {
+      setAviso({ texto: 'Armando PDF…' })
+      const r = await compartirCatalogoPdf(productos)
+      setAviso({ texto: `PDF listo · ${r.cantidad} productos con stock`, tipo: 'ok' })
+    } catch (error) {
+      setAviso({
+        texto: error instanceof Error ? error.message : 'No se pudo generar el PDF',
+        tipo: 'error',
+      })
+    }
+  }
+
   if (cargando || !catalogo) {
     return (
       <div className="app">
@@ -352,6 +366,15 @@ export default function App() {
           <button type="button" className="accion" onClick={() => setPantalla({ tipo: 'sync' })}>
             <span className="accion-icono" aria-hidden="true">📶</span>
             <span className="accion-texto">Sync PC</span>
+          </button>
+          <button
+            type="button"
+            className="accion"
+            onClick={() => void exportarPdf()}
+            title="PDF del catálogo con stock"
+          >
+            <span className="accion-icono" aria-hidden="true">📄</span>
+            <span className="accion-texto">PDF</span>
           </button>
           <button
             type="button"
