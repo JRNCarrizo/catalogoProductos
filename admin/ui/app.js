@@ -981,8 +981,43 @@ async function exportarPdfCatalogo() {
   }
 }
 
+async function traerCatalogoWeb() {
+  if (
+    estado.sucio &&
+    !confirm('Tenés cambios sin guardar en el panel. Si traés la web, se pierden. ¿Continuar?')
+  ) {
+    return
+  }
+  if (
+    !confirm(
+      'Esto reemplaza el catálogo local por el de la web (el que publicó tu primo o vos). ¿Continuar?',
+    )
+  ) {
+    return
+  }
+  try {
+    avisar('Descargando catálogo de la web…')
+    estado.catalogo = await window.panel.traerCatalogoWeb()
+    marcarSucio(false)
+    if (estado.seleccionId) {
+      const sigue = estado.catalogo.productos.some((producto) => producto.id === estado.seleccionId)
+      if (sigue) seleccionar(estado.seleccionId)
+      else {
+        estado.seleccionId = null
+        elementos.formulario.classList.add('oculto')
+        elementos.editorVacio.classList.remove('oculto')
+      }
+    }
+    dibujarLista()
+    avisar(`Catálogo actualizado · ${estado.catalogo.productos.length} productos`, 'exito')
+  } catch (error) {
+    avisar(error instanceof Error ? error.message : 'No se pudo traer de la web', 'error')
+  }
+}
+
 $('#btn-vista-previa').addEventListener('click', () => window.panel.vistaPrevia())
 $('#btn-pdf').addEventListener('click', () => void exportarPdfCatalogo())
+$('#btn-traer-web').addEventListener('click', () => void traerCatalogoWeb())
 $('#btn-pedidos').addEventListener('click', () => void mostrarPedidos())
 $('#btn-sync').addEventListener('click', () => void mostrarSync())
 elementos.syncInfo.addEventListener('click', () => void mostrarSync())

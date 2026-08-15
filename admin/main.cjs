@@ -330,6 +330,26 @@ ipcMain.handle('catalogo:guardar', async (_evento, catalogo) => {
   return datos
 })
 
+/** Trae el catálogo publicado en la web (útil si alguien publicó desde la APK). */
+ipcMain.handle('catalogo:traerWeb', async () => {
+  const url = `https://vinosderemate.netlify.app/data/productos.json?v=${Date.now()}`
+  const respuesta = await fetch(url)
+  if (!respuesta.ok) {
+    throw new Error(`No se pudo bajar el catálogo (HTTP ${respuesta.status})`)
+  }
+  const catalogo = await respuesta.json()
+  if (!catalogo || !Array.isArray(catalogo.productos)) {
+    throw new Error('El archivo de la web no parece un catálogo válido')
+  }
+  const datos = {
+    actualizado: catalogo.actualizado || new Date().toISOString(),
+    moneda: catalogo.moneda || 'ARS',
+    productos: catalogo.productos,
+  }
+  await fs.writeFile(rutaCatalogo, `${JSON.stringify(datos, null, 2)}\n`, 'utf8')
+  return datos
+})
+
 ipcMain.handle('pedidos:leer', async () => leerPedidos(rutaPedidos))
 
 ipcMain.handle('pedidos:confirmar', async (_evento, payload) => {

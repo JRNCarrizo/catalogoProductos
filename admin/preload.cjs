@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron')
 contextBridge.exposeInMainWorld('panel', {
   leerCatalogo: () => ipcRenderer.invoke('catalogo:leer'),
   guardarCatalogo: (catalogo) => ipcRenderer.invoke('catalogo:guardar', catalogo),
+  traerCatalogoWeb: () => ipcRenderer.invoke('catalogo:traerWeb'),
   elegirImagen: (idProducto, reemplazar) => ipcRenderer.invoke('imagen:elegir', idProducto, reemplazar),
   guardarPng: (payload) => ipcRenderer.invoke('imagen:guardar-png', payload),
   borrarImagen: (rutaRelativa) => ipcRenderer.invoke('imagen:borrar', rutaRelativa),
