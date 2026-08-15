@@ -2,6 +2,94 @@
   "pendientes": [],
   "historial": [
     {
+      "id": "ped-1786797041920",
+      "codigo": "#3x1,43x3,46x2,45x2,54x2,48x1,17x3,18x1,19x1,57x1,44x2",
+      "fecha": "2026-08-15T12:30:41.920Z",
+      "estado": "confirmado",
+      "origen": "panel",
+      "total": 273000,
+      "items": [
+        {
+          "productoId": "catena-zapata-dv-malbec-malbec-1-5",
+          "indice": 3,
+          "nombre": "Catena Zapata DV. Catena 1.5",
+          "cantidad": 1,
+          "precio": 12000
+        },
+        {
+          "productoId": "catena-zapata-dv-cabernet-malbec",
+          "indice": 43,
+          "nombre": "Catena Zapata DV. Catena",
+          "cantidad": 3,
+          "precio": 10000
+        },
+        {
+          "productoId": "luca-wines-luca-beso-de-dante",
+          "indice": 46,
+          "nombre": "Luca Wines Luca Beso de Dante",
+          "cantidad": 2,
+          "precio": 30000
+        },
+        {
+          "productoId": "luca-wines-luca-malbec",
+          "indice": 45,
+          "nombre": "Luca Wines Luca",
+          "cantidad": 2,
+          "precio": 22000
+        },
+        {
+          "productoId": "luca-wines-luca",
+          "indice": 54,
+          "nombre": "Luca Wines Luca",
+          "cantidad": 2,
+          "precio": 20000
+        },
+        {
+          "productoId": "el-enemigo-gran-enemigo-chacayes-cabernet-franc",
+          "indice": 48,
+          "nombre": "El Enemigo Gran Enemigo Chacayes",
+          "cantidad": 1,
+          "precio": 30000
+        },
+        {
+          "productoId": "catena-zapata-saint-felicien-malbec",
+          "indice": 17,
+          "nombre": "Catena Zapata Saint Felicien",
+          "cantidad": 3,
+          "precio": 6000
+        },
+        {
+          "productoId": "catena-zapata-saint-felicien-cabernet-franc",
+          "indice": 18,
+          "nombre": "Catena Zapata Saint Felicien",
+          "cantidad": 1,
+          "precio": 5000
+        },
+        {
+          "productoId": "catena-zapata-saint-felicien-pinot-noir",
+          "indice": 19,
+          "nombre": "Catena Zapata Saint Felicien",
+          "cantidad": 1,
+          "precio": 5000
+        },
+        {
+          "productoId": "saint-felicien",
+          "indice": 57,
+          "nombre": "Saint felicien",
+          "cantidad": 1,
+          "precio": 5000
+        },
+        {
+          "productoId": "catena-zapata-dv-catena-l-exploratore-malbec-la-rioja",
+          "indice": 44,
+          "nombre": "Catena Zapata DV. Catena L'exploratore La Rioja",
+          "cantidad": 2,
+          "precio": 12000
+        }
+      ],
+      "avisos": []
+    },
+    {
       "id": "ped-1785018987096",
       "codigo": "#2x2,3x2,1x3,8x5",
       "fecha": "2026-07-25T22:36:27.096Z",
