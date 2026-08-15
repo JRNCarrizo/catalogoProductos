@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-08-15T13:32:57.427Z",
+  "actualizado": "2026-08-15T14:54:16.110Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -1445,7 +1445,7 @@
       "precioCaja": null,
       "volumenMl": 750,
       "graduacion": 13.5,
-      "stock": 1,
+      "stock": 0,
       "destacado": false,
       "activo": true,
       "codigoBarras": "",
