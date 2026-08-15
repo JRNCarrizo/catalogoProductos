@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { sitio } from '../config/sitio'
+import { useSitio } from '../hooks/useSitio'
 import { consultaGeneral } from '../lib/whatsapp'
 import { IconoCarrito, IconoCopa, IconoWhatsApp } from './iconos'
 
@@ -14,6 +14,7 @@ const enlaces = [
 ]
 
 export function Encabezado({ unidades, onAbrirCarrito }: Props) {
+  const sitio = useSitio()
   const [compacto, setCompacto] = useState(false)
 
   useEffect(() => {

@@ -627,6 +627,17 @@ textarea {
   font-size: 0.85rem;
 }
 
+.titulo-seccion {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--crema);
+}
+
+.bloque-sync {
+  padding-bottom: 4px;
+}
+
 .aviso.ok {
   border-color: rgba(37, 211, 102, 0.4);
   color: #a9f0c6;

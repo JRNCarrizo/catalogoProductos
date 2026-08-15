@@ -1,21 +1,28 @@
-import { sitio } from '../config/sitio'
+import { sitioDesdeRuta } from '../config/sitio'
 import type { ItemCarrito, Producto } from '../types'
 import { precio, precioUnitario, subtotalLinea } from './formato'
 import { codificarPedido } from './pedidoCodigo'
 
+function sitioActual() {
+  return sitioDesdeRuta()
+}
+
 function enlace(mensaje: string): string {
-  return `https://wa.me/${sitio.whatsapp}?text=${encodeURIComponent(mensaje)}`
+  const s = sitioActual()
+  return `https://wa.me/${s.whatsapp}?text=${encodeURIComponent(mensaje)}`
 }
 
 export function consultaProducto(producto: Producto): string {
+  const s = sitioActual()
   const etiqueta = [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
   return enlace(
-    `Hola ${sitio.nombre}! Quiero consultar por *${etiqueta}* (${precio(producto.precio)}). ¿Tienen stock?`,
+    `Hola ${s.nombre}! Quiero consultar por *${etiqueta}* (${precio(producto.precio)}). ¿Tienen stock?`,
   )
 }
 
 export function consultaGeneral(): string {
-  return enlace(`Hola ${sitio.nombre}! Estuve viendo el catálogo y quería hacer una consulta.`)
+  const s = sitioActual()
+  return enlace(`Hola ${s.nombre}! Estuve viendo el catálogo y quería hacer una consulta.`)
 }
 
 /** `catalogo` es la lista completa (mismo orden que productos.json) para armar el código corto. */
@@ -25,6 +32,7 @@ export function pedido(
   catalogo: Producto[],
   nota?: string,
 ): string {
+  const s = sitioActual()
   const lineas = items.map(({ producto, cantidad }) => {
     const etiqueta = [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
     const unitario = precioUnitario(producto, cantidad)
@@ -39,7 +47,7 @@ export function pedido(
 
   // Un producto por línea y el total abajo. Los saltos (\n → %0A) los respeta WhatsApp.
   const partes = [
-    `Hola ${sitio.nombre}! Quiero hacer este pedido:`,
+    `Hola ${s.nombre}! Quiero hacer este pedido:`,
     '',
     ...lineas,
     '',

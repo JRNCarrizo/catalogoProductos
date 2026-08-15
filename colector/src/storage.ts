@@ -1,9 +1,10 @@
 import { Preferences } from '@capacitor/preferences'
 import type { CambioPendiente, Catalogo, Producto } from './types'
-import { productoVacio } from './types'
+import { API_PUBLICAR, productoVacio } from './types'
 
 const CLAVE_CATALOGO = 'colector:catalogo'
 const CLAVE_CAMBIOS = 'colector:cambios'
+const CLAVE_NUBE = 'colector:clave-nube'
 
 const vacio = (): Catalogo => ({
   actualizado: new Date().toISOString(),
@@ -87,6 +88,71 @@ export async function importarCatalogoRemoto(url: string): Promise<Catalogo> {
 
 export async function vaciarCambios(): Promise<void> {
   await Preferences.set({ key: CLAVE_CAMBIOS, value: '[]' })
+}
+
+export async function leerClaveNube(): Promise<string> {
+  const { value } = await Preferences.get({ key: CLAVE_NUBE })
+  return value || ''
+}
+
+export async function guardarClaveNube(clave: string): Promise<void> {
+  await Preferences.set({ key: CLAVE_NUBE, value: clave.trim() })
+}
+
+/**
+ * Sube la cola de cambios a la web (stock + altas sin foto).
+ * La clave es la misma que COLECTOR_CLAVE en Netlify; se guarda en el celu.
+ */
+export async function publicarEnNube(clave: string): Promise<{
+  altas: number
+  ediciones: number
+  bajas: number
+  productos: number
+}> {
+  const limpia = clave.trim()
+  if (!limpia) throw new Error('Falta la clave de publicación')
+
+  const cambios = await leerCambios()
+  if (cambios.length === 0) throw new Error('No hay cambios pendientes')
+
+  const respuesta = await fetch(API_PUBLICAR, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-colector-clave': limpia,
+    },
+    body: JSON.stringify({
+      cambios,
+      mensaje: `Colector APK · ${cambios.length} cambio(s)`,
+    }),
+  })
+
+  let datos: {
+    ok?: boolean
+    error?: string
+    altas?: number
+    ediciones?: number
+    bajas?: number
+    productos?: number
+  } = {}
+  try {
+    datos = (await respuesta.json()) as typeof datos
+  } catch {
+    // ignore
+  }
+
+  if (!respuesta.ok || !datos.ok) {
+    throw new Error(datos.error || `No se pudo publicar (HTTP ${respuesta.status})`)
+  }
+
+  await guardarClaveNube(limpia)
+  await vaciarCambios()
+  return {
+    altas: datos.altas ?? 0,
+    ediciones: datos.ediciones ?? 0,
+    bajas: datos.bajas ?? 0,
+    productos: datos.productos ?? 0,
+  }
 }
 
 const CLAVE_PC = 'colector:ip-pc'

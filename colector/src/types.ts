@@ -45,6 +45,9 @@ export const TIPOS: TipoVino[] = ['Tinto', 'Blanco', 'Rosado', 'Espumante', 'Dul
 
 export const CATALOGO_ONLINE = 'https://vinosderemate.netlify.app/data/productos.json'
 
+/** Endpoint Netlify para publicar stock / altas desde la APK. */
+export const API_PUBLICAR = 'https://vinosderemate.netlify.app/api/colector-publicar'
+
 export function productoVacio(parcial: Partial<Producto> = {}): Producto {
   return {
     id: '',

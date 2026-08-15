@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { sitio } from '../config/sitio'
+import { useSitio } from '../hooks/useSitio'
 import { BotellaIlustrada } from './BotellaIlustrada'
 import { IconoFlechaAbajo, IconoWhatsApp } from './iconos'
 import { consultaGeneral } from '../lib/whatsapp'
@@ -21,6 +21,7 @@ function VisualPortada({
   onError: () => void
   variante: 'mobile' | 'desktop'
 }) {
+  const sitio = useSitio()
   const esMobile = variante === 'mobile'
 
   if (esMobile) {
@@ -74,6 +75,7 @@ function VisualPortada({
 }
 
 export function Portada({ cantidadEtiquetas, cantidadBodegas }: Props) {
+  const sitio = useSitio()
   const [fotoOk, setFotoOk] = useState(true)
   const foto = sitio.hero.imagen ? recurso(sitio.hero.imagen) : ''
   const onError = () => setFotoOk(false)

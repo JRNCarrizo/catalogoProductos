@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { Producto } from './types'
-import { sitio } from './config/sitio'
 import { useCatalogo } from './hooks/useCatalogo'
 import { useCarrito } from './hooks/useCarrito'
+import { useSitio } from './hooks/useSitio'
 import { Encabezado } from './components/Encabezado'
 import { Portada } from './components/Portada'
 import { Beneficios } from './components/Beneficios'
@@ -23,6 +23,7 @@ const filtrosIniciales: EstadoFiltros = {
 }
 
 export default function App() {
+  const sitio = useSitio()
   const { cargando, error, catalogo } = useCatalogo()
   const productos = catalogo?.productos ?? []
   /** Solo los publicados: inactivos quedan en el JSON para panel/APK, no en la web. */

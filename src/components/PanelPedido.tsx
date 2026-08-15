@@ -2,7 +2,7 @@ import type { ItemCarrito, Producto } from '../types'
 import { precio, aplicaPromoCantidad, precioUnitario, subtotalLinea } from '../lib/formato'
 import { recurso } from '../lib/rutas'
 import { pedido } from '../lib/whatsapp'
-import { sitio } from '../config/sitio'
+import { useSitio } from '../hooks/useSitio'
 import { useSuperposicion } from '../hooks/useSuperposicion'
 import { BotellaIlustrada } from './BotellaIlustrada'
 import { IconoCerrar, IconoWhatsApp } from './iconos'
@@ -28,6 +28,7 @@ export function PanelPedido({
   onQuitar,
   onVaciar,
 }: Props) {
+  const sitio = useSitio()
   useSuperposicion(abierto, onCerrar)
 
   if (!abierto) return null

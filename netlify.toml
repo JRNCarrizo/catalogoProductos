@@ -10,6 +10,15 @@
 [build.environment]
   NODE_VERSION = "22"
 
+[functions]
+  directory = "netlify/functions"
+
+# API del colector (APK → catálogo). Variables: COLECTOR_CLAVE, GITHUB_TOKEN
+[[redirects]]
+  from = "/api/colector-publicar"
+  to = "/.netlify/functions/colector-publicar"
+  status = 200
+
 # SPA: todas las rutas caen en index.html
 [[redirects]]
   from = "/*"

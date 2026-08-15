@@ -4,15 +4,18 @@ import {
   enviarPedidoAPc,
   enviarPedidosLocalesAPc,
   guardarCatalogo,
+  guardarClaveNube,
   guardarIpPc,
   guardarPedidoLocal,
   importarCatalogoRemoto,
   leerCambios,
   leerCatalogo,
+  leerClaveNube,
   leerIpPc,
   leerPedidosLocales,
   parsearHostSync,
   probarPc,
+  publicarEnNube,
   registrarCambio,
   sincronizarConPc,
   type PedidoLocalPendiente,
@@ -364,8 +367,8 @@ export default function App() {
             {pedidosLocales > 0 && <span className="accion-badge">{pedidosLocales}</span>}
           </button>
           <button type="button" className="accion" onClick={() => setPantalla({ tipo: 'sync' })}>
-            <span className="accion-icono" aria-hidden="true">📶</span>
-            <span className="accion-texto">Sync PC</span>
+            <span className="accion-icono" aria-hidden="true">☁</span>
+            <span className="accion-texto">Publicar</span>
           </button>
           <button
             type="button"
@@ -476,6 +479,7 @@ function PantallaSync({
 }) {
   const [ip, setIp] = useState('')
   const [guardada, setGuardada] = useState('')
+  const [clave, setClave] = useState('')
   const [trabajando, setTrabajando] = useState(false)
   const [estado, setEstado] = useState<string | null>(null)
 
@@ -484,6 +488,7 @@ function PantallaSync({
       setIp(valor)
       setGuardada(valor)
     })
+    void leerClaveNube().then(setClave)
   }, [])
 
   const aplicarHost = async (entrada: string, persistir = true) => {
@@ -558,14 +563,46 @@ function PantallaSync({
     }
   }
 
+  const publicarWeb = async () => {
+    if (pendientes <= 0) {
+      onError('No hay cambios pendientes para publicar.')
+      return
+    }
+    if (!clave.trim()) {
+      onError('Escribí la clave compartida (una sola vez).')
+      return
+    }
+    if (
+      !confirm(
+        `Se van a subir ${pendientes} cambio(s) a la web (stock y altas sin foto). ¿Continuar?`,
+      )
+    ) {
+      return
+    }
+    setTrabajando(true)
+    setEstado(null)
+    try {
+      await guardarClaveNube(clave)
+      const r = await publicarEnNube(clave)
+      await onOk(
+        `Web OK · ${r.altas} altas, ${r.ediciones} stock/ediciones` +
+          (r.bajas ? `, ${r.bajas} bajas` : '') +
+          '. En 1–2 min se ve en el sitio.',
+      )
+    } catch (error) {
+      onError(error instanceof Error ? error.message : 'No se pudo publicar a la web')
+    } finally {
+      setTrabajando(false)
+    }
+  }
+
   return (
     <div className="app">
       <header className="barra">
         <div>
-          <h1>Sync a la PC</h1>
+          <h1>Publicar</h1>
           <small>
-            {guardada ? `PC configurada: ${guardada}` : 'Configurá la PC una sola vez'}
-            {pendientes > 0 ? ` · ${pendientes} pendientes` : ''}
+            {pendientes > 0 ? `${pendientes} cambios pendientes` : 'Sin cambios pendientes'}
           </small>
         </div>
         <button type="button" className="boton fantasma" onClick={onVolver}>
@@ -573,56 +610,86 @@ function PantallaSync({
         </button>
       </header>
       <main className="contenido">
-        <p className="aviso">
-          En la PC: panel → <strong>Sync celular</strong> → escaneá el QR.
-          <br />
-          La IP se guarda en el celular para no cargarla de nuevo.
-        </p>
-
-        <button type="button" className="boton bloque oro" disabled={trabajando} onClick={() => void escanearQrPc()}>
-          Escanear QR de la PC
-        </button>
-
-        <label className="campo" style={{ marginTop: 14 }}>
-          <span>IP de la PC (manual)</span>
-          <input
-            value={ip}
-            onChange={(e) => setIp(e.target.value)}
-            placeholder="192.168.0.15"
-            inputMode="decimal"
-            autoCapitalize="off"
-            autoCorrect="off"
-          />
-        </label>
-
-        {estado && <p className="aviso ok">{estado}</p>}
-
-        <div className="formulario" style={{ marginTop: 12 }}>
-          <button type="button" className="boton bloque" disabled={!ip || trabajando} onClick={() => void guardarConfig()}>
-            Guardar IP
-          </button>
-          <button type="button" className="boton bloque" disabled={!ip || trabajando} onClick={() => void probar()}>
-            Probar conexión
-          </button>
+        <section className="bloque-sync">
+          <h2 className="titulo-seccion">A la web (desde cualquier lado)</h2>
+          <p className="aviso">
+            Sube stock y productos nuevos <strong>sin foto</strong>. Las imágenes las cargás después
+            en el panel.
+          </p>
+          <label className="campo">
+            <span>Clave compartida</span>
+            <input
+              value={clave}
+              onChange={(e) => setClave(e.target.value)}
+              placeholder="La misma que en Netlify"
+              autoCapitalize="off"
+              autoCorrect="off"
+              type="password"
+            />
+          </label>
           <button
             type="button"
             className="boton bloque primario"
-            disabled={!ip || trabajando}
-            onClick={() => void enviar(false)}
+            disabled={trabajando || pendientes <= 0}
+            onClick={() => void publicarWeb()}
           >
-            Enviar cambios a la PC
+            Publicar a la web
           </button>
-          <button
-            type="button"
-            className="boton bloque fantasma"
-            disabled={!ip || trabajando}
-            onClick={() => {
-              if (confirm('Esto fusiona TODO el catálogo del celu en la PC. ¿Seguro?')) void enviar(true)
-            }}
-          >
-            Enviar catálogo completo
+        </section>
+
+        <section className="bloque-sync" style={{ marginTop: 22 }}>
+          <h2 className="titulo-seccion">A la PC (misma WiFi)</h2>
+          <p className="aviso">
+            En la PC: panel → <strong>Sync celular</strong> → escaneá el QR.
+            <br />
+            {guardada ? `PC configurada: ${guardada}` : 'Configurá la PC una sola vez.'}
+          </p>
+
+          <button type="button" className="boton bloque oro" disabled={trabajando} onClick={() => void escanearQrPc()}>
+            Escanear QR de la PC
           </button>
-        </div>
+
+          <label className="campo" style={{ marginTop: 14 }}>
+            <span>IP de la PC (manual)</span>
+            <input
+              value={ip}
+              onChange={(e) => setIp(e.target.value)}
+              placeholder="192.168.0.15"
+              inputMode="decimal"
+              autoCapitalize="off"
+              autoCorrect="off"
+            />
+          </label>
+
+          {estado && <p className="aviso ok">{estado}</p>}
+
+          <div className="formulario" style={{ marginTop: 12 }}>
+            <button type="button" className="boton bloque" disabled={!ip || trabajando} onClick={() => void guardarConfig()}>
+              Guardar IP
+            </button>
+            <button type="button" className="boton bloque" disabled={!ip || trabajando} onClick={() => void probar()}>
+              Probar conexión
+            </button>
+            <button
+              type="button"
+              className="boton bloque primario"
+              disabled={!ip || trabajando}
+              onClick={() => void enviar(false)}
+            >
+              Enviar cambios a la PC
+            </button>
+            <button
+              type="button"
+              className="boton bloque fantasma"
+              disabled={!ip || trabajando}
+              onClick={() => {
+                if (confirm('Esto fusiona TODO el catálogo del celu en la PC. ¿Seguro?')) void enviar(true)
+              }}
+            >
+              Enviar catálogo completo
+            </button>
+          </div>
+        </section>
       </main>
     </div>
   )

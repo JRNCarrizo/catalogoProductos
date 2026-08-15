@@ -1,6 +1,6 @@
-import { sitio } from '../config/sitio'
 import { fechaLegible } from '../lib/formato'
 import { consultaGeneral } from '../lib/whatsapp'
+import { useSitio } from '../hooks/useSitio'
 import { IconoCopa, IconoWhatsApp } from './iconos'
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
 }
 
 export function PieDePagina({ actualizado }: Props) {
+  const sitio = useSitio()
   const anio = new Date().getFullYear()
 
   return (
@@ -35,6 +36,12 @@ export function PieDePagina({ actualizado }: Props) {
 
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-humo">
               Catálogo actualizado con stock limitado. Armá tu pedido y lo confirmamos por WhatsApp.
+              {sitio.id !== 'jorge' && (
+                <>
+                  {' '}
+                  Atención a cargo de <span className="text-crema/90">{sitio.nombreCorto}</span>.
+                </>
+              )}
             </p>
 
             <a
