@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-08-15T19:50:27.242Z",
+  "actualizado": "2026-08-15T19:52:39.555Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -1343,7 +1343,7 @@
       "graduacion": 13.5,
       "stock": 0,
       "destacado": true,
-      "activo": true,
+      "activo": false,
       "codigoBarras": "",
       "imagen": "img/el-enemigo-gran-enemigo-chacayes-cabernet-franc.png",
       "descripcion": "Este exponente de alta gama destaca por su complejidad y elegancia, proveniente de suelos pedregosos en una de las zonas más prestigiosas del Valle de Uco. Es un vino con gran estructura, taninos firmes y un final persistente que refleja fielmente el carácter único del terroir de Chacayes.",
