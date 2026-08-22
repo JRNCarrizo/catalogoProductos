@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-08-22T22:17:04.337Z",
+  "actualizado": "2026-08-22T22:18:19.282Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -8,9 +8,9 @@
       "bodega": "Catena Zapata",
       "tipo": "Dulce",
       "variedad": "Semillón",
-      "anio": null,
+      "anio": 2019,
       "region": "Mendoza",
-      "precio": 0,
+      "precio": 20000,
       "precioAnterior": null,
       "precioCaja": null,
       "volumenMl": 500,
