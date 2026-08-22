@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-08-22T22:13:20.748Z",
+  "actualizado": "2026-08-22T22:14:50.050Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -53,28 +53,6 @@
         "toques de especias y vainilla"
       ],
       "maridaje": "asado argentino, carnes rojas a la parrilla, cordero, quesos duros"
-    },
-    {
-      "id": "alamos",
-      "nombre": "Alamos",
-      "bodega": "",
-      "tipo": "Tinto",
-      "variedad": "",
-      "anio": null,
-      "region": "",
-      "precio": 0,
-      "precioAnterior": null,
-      "precioCaja": null,
-      "volumenMl": 750,
-      "graduacion": null,
-      "stock": 0,
-      "destacado": false,
-      "activo": true,
-      "codigoBarras": "",
-      "imagen": "",
-      "descripcion": "",
-      "notas": [],
-      "maridaje": ""
     },
     {
       "id": "catena-zapata-vicenzo-rosso",
