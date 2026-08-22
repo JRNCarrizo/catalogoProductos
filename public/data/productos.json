@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-08-22T22:12:25.106Z",
+  "actualizado": "2026-08-22T22:13:20.748Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -110,7 +110,7 @@
       "variedad": "Malbec",
       "anio": null,
       "region": "Mendoza",
-      "precio": 0,
+      "precio": 25000,
       "precioAnterior": null,
       "precioCaja": null,
       "volumenMl": 750,
