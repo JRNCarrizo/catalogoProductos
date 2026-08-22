@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-08-22T22:14:50.050Z",
+  "actualizado": "2026-08-22T22:17:04.337Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -1553,7 +1553,7 @@
       "destacado": false,
       "activo": true,
       "codigoBarras": "",
-      "imagen": "",
+      "imagen": "img/luca-wines-luca.png",
       "descripcion": "Este Pinot de alta gama destaca por su elegancia y complejidad, proveniente de viñedos de altura en el Valle de Uco. Ofrece una estructura firme con taninos sedosos y un final persistente que refleja la pureza del terroir mendocino.",
       "notas": [
         "frutos negros maduros",
@@ -1605,7 +1605,7 @@
       "destacado": false,
       "activo": true,
       "codigoBarras": "",
-      "imagen": "",
+      "imagen": "img/angelica.png",
       "descripcion": "",
       "notas": [],
       "maridaje": ""
