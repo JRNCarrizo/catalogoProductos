@@ -319,6 +319,30 @@ function ejecutar(comando, argumentos) {
   })
 }
 
+/** En apps del menú Inicio a veces `git` no está en el PATH; probamos ubicaciones habituales. */
+async function resolverGit() {
+  const candidatos = ['git']
+  if (process.platform === 'win32') {
+    candidatos.push(
+      'C:\\Program Files\\Git\\cmd\\git.exe',
+      'C:\\Program Files\\Git\\bin\\git.exe',
+      'C:\\Program Files (x86)\\Git\\cmd\\git.exe',
+    )
+  }
+  for (const cmd of candidatos) {
+    const r = await ejecutar(cmd, ['--version'])
+    if (r.ok) return cmd
+  }
+  return null
+}
+
+async function cantidadCommits(git, rango) {
+  const r = await ejecutar(git, ['rev-list', '--count', rango])
+  if (!r.ok) return 0
+  const n = Number.parseInt(r.salida, 10)
+  return Number.isFinite(n) ? n : 0
+}
+
 ipcMain.handle('catalogo:leer', async () => {
   const contenido = await fs.readFile(rutaCatalogo, 'utf8')
   return JSON.parse(contenido)
@@ -508,35 +532,90 @@ ipcMain.handle('catalogo:pdf', async () => {
 
 ipcMain.handle('sitio:publicar', async (_evento, mensaje) => {
   const pasos = []
+  const git = await resolverGit()
+  if (!git) {
+    return {
+      ok: false,
+      pasos: [
+        {
+          paso: 'Git',
+          salida:
+            'No encontré Git en esta PC. Instalá Git for Windows o abrí el panel desde la carpeta del proyecto.',
+        },
+      ],
+    }
+  }
 
-  const estado = await ejecutar('git', ['status', '--porcelain'])
+  const estado = await ejecutar(git, ['status', '--porcelain'])
   if (!estado.ok) {
-    return { ok: false, pasos: [{ paso: 'git status', salida: estado.salida || 'Git no está disponible.' }] }
-  }
-  if (!estado.salida) {
-    return { ok: true, sinCambios: true, pasos: [{ paso: 'Sin cambios', salida: 'No hay nada nuevo para publicar.' }] }
+    return { ok: false, pasos: [{ paso: 'git status', salida: estado.salida || 'Git no respondió.' }] }
   }
 
-  // En Windows el -m "texto con espacios" se parte mal; -F con archivo evita eso.
   const textoCommit = String(mensaje || 'Actualizo el catalogo').trim() || 'Actualizo el catalogo'
   const archivoMensaje = path.join(os.tmpdir(), `vinos-commit-${Date.now()}.txt`)
   await fs.writeFile(archivoMensaje, `${textoCommit}\n`, 'utf8')
 
   try {
-    const secuencia = [
-      { paso: 'Preparando archivos', comando: 'git', argumentos: ['add', '-A'] },
-      {
-        paso: 'Guardando cambios',
-        comando: 'git',
-        argumentos: ['commit', '-F', archivoMensaje],
-      },
-      { paso: 'Publicando', comando: 'git', argumentos: ['push'] },
-    ]
+    // 1) Commit local si hay cambios en el disco
+    if (estado.salida) {
+      const add = await ejecutar(git, ['add', '-A'])
+      pasos.push({ paso: 'Preparando archivos', salida: add.salida || 'ok' })
+      if (!add.ok) return { ok: false, pasos }
 
-    for (const item of secuencia) {
-      const resultado = await ejecutar(item.comando, item.argumentos)
-      pasos.push({ paso: item.paso, salida: resultado.salida })
-      if (!resultado.ok) return { ok: false, pasos }
+      const commit = await ejecutar(git, ['commit', '-F', archivoMensaje])
+      pasos.push({ paso: 'Guardando cambios', salida: commit.salida || 'ok' })
+      if (!commit.ok) return { ok: false, pasos }
+    }
+
+    // 2) Traer lo que publicó la APK / otro equipo (si no, el push falla)
+    const fetch = await ejecutar(git, ['fetch', 'origin'])
+    pasos.push({ paso: 'Buscando cambios remotos', salida: fetch.salida || 'ok' })
+    if (!fetch.ok) {
+      pasos.push({
+        paso: 'Ayuda',
+        salida: 'No pude hablar con GitHub. Revisá internet o el acceso al repo.',
+      })
+      return { ok: false, pasos }
+    }
+
+    const detras = await cantidadCommits(git, 'HEAD..origin/main')
+    const adelante = await cantidadCommits(git, 'origin/main..HEAD')
+
+    if (detras === 0 && adelante === 0 && !estado.salida) {
+      return {
+        ok: true,
+        sinCambios: true,
+        pasos: [...pasos, { paso: 'Sin cambios', salida: 'No hay nada nuevo para publicar.' }],
+      }
+    }
+
+    if (detras > 0) {
+      const pull = await ejecutar(git, ['pull', '--rebase', '--autostash', 'origin', 'main'])
+      pasos.push({
+        paso: 'Integrando cambios de la web/APK',
+        salida: pull.salida || `ok (${detras} commit(s) remotos)`,
+      })
+      if (!pull.ok) {
+        await ejecutar(git, ['rebase', '--abort']).catch(() => undefined)
+        pasos.push({
+          paso: 'Ayuda',
+          salida:
+            'Chocó con cambios publicados desde el celular. Tocá «Traer de la web», revisá el catálogo y volvé a Publicar.',
+        })
+        return { ok: false, pasos }
+      }
+    }
+
+    // 3) Subir
+    const push = await ejecutar(git, ['push', 'origin', 'HEAD'])
+    pasos.push({ paso: 'Publicando', salida: push.salida || 'ok' })
+    if (!push.ok) {
+      pasos.push({
+        paso: 'Ayuda',
+        salida:
+          'El push a GitHub falló. Si la APK publicó hace poco, probá de nuevo: el panel ahora intenta integrar esos cambios antes de subir.',
+      })
+      return { ok: false, pasos }
     }
 
     return { ok: true, pasos }
