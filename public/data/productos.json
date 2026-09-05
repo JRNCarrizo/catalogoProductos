@@ -1,89 +1,7 @@
 {
-<<<<<<< HEAD
-  "actualizado": "2026-09-01T20:32:55.588Z",
-=======
-  "actualizado": "2026-09-05T22:06:53.226Z",
->>>>>>> 51b7d29 (Actualizo el catalogo)
+  "actualizado": "2026-09-05T22:14:12.846Z",
   "moneda": "ARS",
   "productos": [
-    {
-      "id": "catena-zapata-nicasia-2",
-      "nombre": "Nicasia",
-      "bodega": "Catena Zapata",
-      "tipo": "Tinto",
-      "variedad": "Cabernet-Malbec Blend Historico",
-      "anio": null,
-      "region": "Mendoza",
-      "precio": 18000,
-      "precioAnterior": null,
-      "precioCaja": null,
-      "volumenMl": 750,
-      "graduacion": 13.5,
-      "stock": 1,
-      "destacado": false,
-      "activo": true,
-      "codigoBarras": "",
-      "imagen": "img/catena-zapata-nicasia-2.png",
-      "descripcion": "Este blend histórico rinde homenaje a la visión de Nicolás Catena, combinando la estructura y elegancia del Cabernet Sauvignon con la fruta vibrante del Malbec. Es un vino de gran equilibrio y complejidad, criado cuidadosamente para ofrecer una experiencia sofisticada en cada copa.",
-      "notas": [
-        "Frutos rojos maduros",
-        "Especias dulces",
-        "Taninos sedosos"
-      ],
-      "maridaje": "Asado argentino, carnes rojas a la parrilla, pastas con salsas intensas, quesos duros"
-    },
-    {
-      "id": "catena-zapata-angelica",
-      "nombre": "Angelica",
-      "bodega": "Catena Zapata",
-      "tipo": "Tinto",
-      "variedad": "Cabernet Sauvignon",
-      "anio": null,
-      "region": "Mendoza",
-      "precio": 17000,
-      "precioAnterior": null,
-      "precioCaja": null,
-      "volumenMl": 750,
-      "graduacion": 13.9,
-      "stock": 1,
-      "destacado": false,
-      "activo": true,
-      "codigoBarras": "",
-      "imagen": "img/catena-zapata-angelica.png",
-      "descripcion": "Este vino es un referente de elegancia y estructura, elaborado con uvas provenientes de viñedos de altura en Mendoza. Presenta una complejidad notable gracias a su paso por barricas de roble, ofreciendo un equilibrio perfecto entre potencia y refinamiento.",
-      "notas": [
-        "cassis",
-        "pimienta negra",
-        "tabaco"
-      ],
-      "maridaje": "carnes rojas a la parrilla, cordero asado, quesos duros"
-    },
-    {
-      "id": "pasarisa-pasarisa",
-      "nombre": "Pasarisa",
-      "bodega": "Pasarisa",
-      "tipo": "Tinto",
-      "variedad": "Syrah",
-      "anio": null,
-      "region": "Mendoza",
-      "precio": 12000,
-      "precioAnterior": null,
-      "precioCaja": null,
-      "volumenMl": 750,
-      "graduacion": 14,
-      "stock": 6,
-      "destacado": false,
-      "activo": true,
-      "codigoBarras": "",
-      "imagen": "img/pasarisa-pasarisa.png",
-      "descripcion": "Este Syrah se destaca por su perfil expresivo y equilibrado, reflejando la tipicidad del terroir mendocino. Es un vino de cuerpo medio con taninos sedosos que ofrecen una experiencia de consumo placentera y versátil.",
-      "notas": [
-        "frutos negros",
-        "pimienta negra",
-        "toques especiados"
-      ],
-      "maridaje": "carnes rojas a la parrilla, guisos de legumbres, quesos semiduros, empanadas de carne"
-    },
     {
       "id": "catena-zapata-saint-felicien-semillon-doux",
       "nombre": "Saint felicien Semillon Doux",
@@ -1713,6 +1631,84 @@
       "descripcion": "",
       "notas": [],
       "maridaje": ""
+    },
+    {
+      "id": "catena-zapata-nicasia-2",
+      "nombre": "Nicasia",
+      "bodega": "Catena Zapata",
+      "tipo": "Tinto",
+      "variedad": "Cabernet-Malbec Blend Historico",
+      "anio": null,
+      "region": "Mendoza",
+      "precio": 18000,
+      "precioAnterior": null,
+      "precioCaja": null,
+      "volumenMl": 750,
+      "graduacion": 13.5,
+      "stock": 1,
+      "destacado": false,
+      "activo": true,
+      "codigoBarras": "",
+      "imagen": "img/catena-zapata-nicasia-2.png",
+      "descripcion": "Este blend histórico rinde homenaje a la visión de Nicolás Catena, combinando la estructura y elegancia del Cabernet Sauvignon con la fruta vibrante del Malbec. Es un vino de gran equilibrio y complejidad, criado cuidadosamente para ofrecer una experiencia sofisticada en cada copa.",
+      "notas": [
+        "Frutos rojos maduros",
+        "Especias dulces",
+        "Taninos sedosos"
+      ],
+      "maridaje": "Asado argentino, carnes rojas a la parrilla, pastas con salsas intensas, quesos duros"
+    },
+    {
+      "id": "catena-zapata-angelica",
+      "nombre": "Angelica",
+      "bodega": "Catena Zapata",
+      "tipo": "Tinto",
+      "variedad": "Cabernet Sauvignon",
+      "anio": null,
+      "region": "Mendoza",
+      "precio": 17000,
+      "precioAnterior": null,
+      "precioCaja": null,
+      "volumenMl": 750,
+      "graduacion": 13.9,
+      "stock": 1,
+      "destacado": false,
+      "activo": true,
+      "codigoBarras": "",
+      "imagen": "img/catena-zapata-angelica.png",
+      "descripcion": "Este vino es un referente de elegancia y estructura, elaborado con uvas provenientes de viñedos de altura en Mendoza. Presenta una complejidad notable gracias a su paso por barricas de roble, ofreciendo un equilibrio perfecto entre potencia y refinamiento.",
+      "notas": [
+        "cassis",
+        "pimienta negra",
+        "tabaco"
+      ],
+      "maridaje": "carnes rojas a la parrilla, cordero asado, quesos duros"
+    },
+    {
+      "id": "pasarisa-pasarisa",
+      "nombre": "Pasarisa",
+      "bodega": "Pasarisa",
+      "tipo": "Tinto",
+      "variedad": "Syrah",
+      "anio": null,
+      "region": "Mendoza",
+      "precio": 12000,
+      "precioAnterior": null,
+      "precioCaja": null,
+      "volumenMl": 750,
+      "graduacion": 14,
+      "stock": 6,
+      "destacado": false,
+      "activo": true,
+      "codigoBarras": "",
+      "imagen": "img/pasarisa-pasarisa.png",
+      "descripcion": "Este Syrah se destaca por su perfil expresivo y equilibrado, reflejando la tipicidad del terroir mendocino. Es un vino de cuerpo medio con taninos sedosos que ofrecen una experiencia de consumo placentera y versátil.",
+      "notas": [
+        "frutos negros",
+        "pimienta negra",
+        "toques especiados"
+      ],
+      "maridaje": "carnes rojas a la parrilla, guisos de legumbres, quesos semiduros, empanadas de carne"
     }
   ]
 }
