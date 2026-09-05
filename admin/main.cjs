@@ -15,6 +15,7 @@ const {
 const { sugerirDatosProducto, leerClaveGemini, configurarRutaGemini } = require('./sugerencias.cjs')
 const { crearServidorUi } = require('./ui-server.cjs')
 const { exportarCatalogoPdf } = require('./catalogo-pdf.cjs')
+const { fusionarCatalogos } = require('./fusionar-catalogo.cjs')
 const QRCode = require('qrcode')
 
 let raizProyecto = path.join(__dirname, '..')
@@ -343,6 +344,177 @@ async function cantidadCommits(git, rango) {
   return Number.isFinite(n) ? n : 0
 }
 
+/** ¿Hay un rebase o merge a medias? */
+async function hayIntegracionEnCurso(git) {
+  const rebase = await ejecutar(git, ['rev-parse', '--git-path', 'rebase-merge'])
+  const rebaseApply = await ejecutar(git, ['rev-parse', '--git-path', 'rebase-apply'])
+  const paths = [rebase.salida, rebaseApply.salida].filter(Boolean)
+  for (const rel of paths) {
+    const abs = path.isAbsolute(rel) ? rel : path.join(raizProyecto, rel)
+    if (fsSync.existsSync(abs)) return 'rebase'
+  }
+  const mergeHead = path.join(raizProyecto, '.git', 'MERGE_HEAD')
+  if (fsSync.existsSync(mergeHead)) return 'merge'
+  return null
+}
+
+/**
+ * Si el único conflicto es productos.json, lo fusiona y continúa.
+ * En rebase: stage 2 = remoto (onto), stage 3 = commit local.
+ * En merge: stage 2 = local (ours), stage 3 = remoto (theirs).
+ */
+async function resolverConflictoCatalogo(git, modo) {
+  const estado = await ejecutar(git, ['status', '--porcelain'])
+  if (!estado.ok) return { ok: false, salida: estado.salida }
+
+  const conflictos = estado.salida
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.startsWith('UU ') || l.startsWith('AA ') || l.startsWith('DU ') || l.startsWith('UD '))
+    .map((l) => l.replace(/^[A-Z]{2}\s+/, '').replace(/\\/g, '/'))
+
+  const otros = conflictos.filter((f) => f !== 'public/data/productos.json')
+  if (!conflictos.includes('public/data/productos.json')) {
+    return { ok: false, salida: `Conflictos sin catálogo: ${conflictos.join(', ') || estado.salida}` }
+  }
+  if (otros.length) {
+    return { ok: false, salida: `También hay conflictos en: ${otros.join(', ')}` }
+  }
+
+  const leerStage = async (stage) => {
+    const r = await ejecutar(git, ['show', `:${stage}:public/data/productos.json`])
+    if (!r.ok) throw new Error(r.salida || `No pude leer stage ${stage}`)
+    return JSON.parse(r.salida)
+  }
+
+  // Rebase: preferimos el commit del panel (3). Merge: preferimos lo local (2).
+  const remoto = await leerStage(modo === 'rebase' ? 2 : 3)
+  const local = await leerStage(modo === 'rebase' ? 3 : 2)
+  const fusion = fusionarCatalogos(remoto, local)
+  await fs.writeFile(rutaCatalogo, `${JSON.stringify(fusion, null, 2)}\n`, 'utf8')
+
+  const add = await ejecutar(git, ['add', 'public/data/productos.json'])
+  if (!add.ok) return { ok: false, salida: add.salida }
+
+  if (modo === 'rebase') {
+    const cont = await new Promise((resolver) => {
+      execFile(
+        git,
+        ['-c', 'core.editor=true', 'rebase', '--continue'],
+        {
+          cwd: raizProyecto,
+          shell: false,
+          windowsHide: true,
+          maxBuffer: 10 * 1024 * 1024,
+          env: { ...process.env, GIT_EDITOR: 'true', EDITOR: 'true' },
+        },
+        (error, stdout, stderr) => {
+          resolver({
+            ok: !error,
+            salida: `${stdout ?? ''}${stderr ?? ''}`.trim(),
+          })
+        },
+      )
+    })
+    // Si sigue en conflicto (otro commit del rebase), ok=false pero rebase sigue en curso.
+    const sigue = await hayIntegracionEnCurso(git)
+    if (cont.ok || sigue === 'rebase') {
+      return { ok: true, salida: cont.salida || 'rebase continue' }
+    }
+    return { ok: false, salida: cont.salida || 'rebase continue falló' }
+  }
+
+  const commit = await ejecutar(git, [
+    'commit',
+    '--no-edit',
+    '-m',
+    'Integro cambios de la APK con el catalogo del panel',
+  ])
+  return { ok: commit.ok, salida: commit.salida || 'merge commit' }
+}
+
+async function integrarRemoto(git, pasos) {
+  // Si quedó un rebase/merge a medias de un intento anterior, abortamos.
+  const enCurso = await hayIntegracionEnCurso(git)
+  if (enCurso === 'rebase') {
+    await ejecutar(git, ['rebase', '--abort'])
+    pasos.push({ paso: 'Limpieza', salida: 'Cancelé un rebase anterior incompleto.' })
+  } else if (enCurso === 'merge') {
+    await ejecutar(git, ['merge', '--abort'])
+    pasos.push({ paso: 'Limpieza', salida: 'Cancelé un merge anterior incompleto.' })
+  }
+
+  const envRebase = {
+    ...process.env,
+    GIT_EDITOR: 'true',
+    GIT_SEQUENCE_EDITOR: 'true',
+  }
+
+  const pull = await new Promise((resolver) => {
+    execFile(
+      git,
+      ['pull', '--rebase', '--autostash', 'origin', 'main'],
+      {
+        cwd: raizProyecto,
+        shell: false,
+        windowsHide: true,
+        maxBuffer: 10 * 1024 * 1024,
+        env: envRebase,
+      },
+      (error, stdout, stderr) => {
+        resolver({
+          ok: !error,
+          salida: `${stdout ?? ''}${stderr ?? ''}`.trim(),
+        })
+      },
+    )
+  })
+
+  if (pull.ok) {
+    pasos.push({ paso: 'Integrando cambios de la web/APK', salida: pull.salida || 'ok' })
+    return true
+  }
+
+  const modo = (await hayIntegracionEnCurso(git)) || 'rebase'
+  if (modo === 'rebase' || modo === 'merge') {
+    try {
+      const resuelto = await resolverConflictoCatalogo(git, modo === 'merge' ? 'merge' : 'rebase')
+      pasos.push({
+        paso: 'Integrando cambios de la web/APK',
+        salida: `${pull.salida}\n\nFusión automática del catálogo:\n${resuelto.salida || 'ok'}`,
+      })
+      if (resuelto.ok) {
+        // Puede haber más commits del rebase
+        let guard = 0
+        while ((await hayIntegracionEnCurso(git)) === 'rebase' && guard < 20) {
+          guard += 1
+          const otra = await resolverConflictoCatalogo(git, 'rebase')
+          pasos.push({ paso: `Continuando rebase (${guard})`, salida: otra.salida || 'ok' })
+          if (!otra.ok) {
+            await ejecutar(git, ['rebase', '--abort'])
+            return false
+          }
+        }
+        return (await hayIntegracionEnCurso(git)) == null
+      }
+    } catch (error) {
+      pasos.push({
+        paso: 'Fusión automática',
+        salida: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
+
+  await ejecutar(git, ['rebase', '--abort']).catch(() => undefined)
+  await ejecutar(git, ['merge', '--abort']).catch(() => undefined)
+  pasos.push({
+    paso: 'Ayuda',
+    salida:
+      'No pude integrar solo. Tocá «Traer de la web», revisá el catálogo y volvé a Publicar.',
+  })
+  return false
+}
+
 ipcMain.handle('catalogo:leer', async () => {
   const contenido = await fs.readFile(rutaCatalogo, 'utf8')
   return JSON.parse(contenido)
@@ -590,30 +762,28 @@ ipcMain.handle('sitio:publicar', async (_evento, mensaje) => {
     }
 
     if (detras > 0) {
-      const pull = await ejecutar(git, ['pull', '--rebase', '--autostash', 'origin', 'main'])
-      pasos.push({
-        paso: 'Integrando cambios de la web/APK',
-        salida: pull.salida || `ok (${detras} commit(s) remotos)`,
-      })
-      if (!pull.ok) {
-        await ejecutar(git, ['rebase', '--abort']).catch(() => undefined)
-        pasos.push({
-          paso: 'Ayuda',
-          salida:
-            'Chocó con cambios publicados desde el celular. Tocá «Traer de la web», revisá el catálogo y volvé a Publicar.',
-        })
-        return { ok: false, pasos }
-      }
+      const ok = await integrarRemoto(git, pasos)
+      if (!ok) return { ok: false, pasos }
     }
 
     // 3) Subir
     const push = await ejecutar(git, ['push', 'origin', 'HEAD'])
     pasos.push({ paso: 'Publicando', salida: push.salida || 'ok' })
     if (!push.ok) {
+      // Si el remoto avanzó otra vez (APK), reintentar una vez
+      const otraVez = await cantidadCommits(git, 'HEAD..origin/main')
+      if (otraVez > 0) {
+        const ok = await integrarRemoto(git, pasos)
+        if (ok) {
+          const push2 = await ejecutar(git, ['push', 'origin', 'HEAD'])
+          pasos.push({ paso: 'Publicando (reintento)', salida: push2.salida || 'ok' })
+          if (push2.ok) return { ok: true, pasos }
+        }
+      }
       pasos.push({
         paso: 'Ayuda',
         salida:
-          'El push a GitHub falló. Si la APK publicó hace poco, probá de nuevo: el panel ahora intenta integrar esos cambios antes de subir.',
+          'El push a GitHub falló. Probá de nuevo en unos segundos; si sigue, tocá «Traer de la web» y volvé a Publicar.',
       })
       return { ok: false, pasos }
     }
