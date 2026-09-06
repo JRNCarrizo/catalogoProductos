@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-09-06T20:04:12.465Z",
+  "actualizado": "2026-09-06T20:07:47.449Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -1591,24 +1591,28 @@
     {
       "id": "angelica",
       "nombre": "Angelica",
-      "bodega": "",
+      "bodega": "Catena Zapata",
       "tipo": "Tinto",
       "variedad": "Cabernet Franc",
       "anio": null,
-      "region": "",
+      "region": "Mendoza",
       "precio": 17000,
       "precioAnterior": null,
       "precioCaja": null,
       "volumenMl": 750,
-      "graduacion": null,
+      "graduacion": 13.5,
       "stock": 2,
       "destacado": false,
       "activo": true,
       "codigoBarras": "",
       "imagen": "img/angelica.png",
-      "descripcion": "",
-      "notas": [],
-      "maridaje": ""
+      "descripcion": "Este ejemplar de alta gama destaca por su elegancia y complejidad, proveniente de viñedos de altura en Mendoza. Ofrece una estructura equilibrada con taninos sedosos y un final persistente que refleja la excelencia de la bodega.",
+      "notas": [
+        "frutos rojos maduros",
+        "pimientos asados",
+        "notas especiadas y minerales"
+      ],
+      "maridaje": "carnes rojas a la parrilla, cordero asado, quesos duros, platos de caza"
     },
     {
       "id": "saint-felicien",
