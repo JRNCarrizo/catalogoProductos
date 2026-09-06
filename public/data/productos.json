@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-09-06T20:02:05.926Z",
+  "actualizado": "2026-09-06T20:04:12.465Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -1286,7 +1286,7 @@
       "region": "La Rioja",
       "precio": 14000,
       "precioAnterior": null,
-      "precioCaja": 12000,
+      "precioCaja": null,
       "volumenMl": 750,
       "graduacion": 13.5,
       "stock": 4,
