@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-09-19T16:53:31.778Z",
+  "actualizado": "2026-09-19T17:11:07.910Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -1791,6 +1791,58 @@
         "toques especiados"
       ],
       "maridaje": "carnes rojas a la parrilla, guisos de legumbres, quesos semiduros, empanadas de carne"
+    },
+    {
+      "id": "catena-zapata-dv-catena-2",
+      "nombre": "DV. Catena",
+      "bodega": "Catena Zapata",
+      "tipo": "Tinto",
+      "variedad": "Tinto Historico",
+      "anio": null,
+      "region": "Mendoza",
+      "precio": 20000,
+      "precioAnterior": null,
+      "precioCaja": null,
+      "volumenMl": 750,
+      "graduacion": 13.5,
+      "stock": 1,
+      "destacado": false,
+      "activo": true,
+      "codigoBarras": "",
+      "imagen": "img/catena-zapata-dv-catena-2.png",
+      "descripcion": "Este vino es un homenaje a la tradición vitivinícola argentina, elaborado con uvas seleccionadas de viñedos de altura. Presenta un equilibrio perfecto entre la fruta madura y la elegancia aportada por su paso por madera, ofreciendo una experiencia sofisticada y fiel al estilo de la bodega.",
+      "notas": [
+        "frutos rojos maduros",
+        "especias suaves",
+        "vainilla"
+      ],
+      "maridaje": "asado argentino, carnes rojas a la parrilla, pastas con salsas intensas, quesos duros"
+    },
+    {
+      "id": "catena-zapata-dv-catena",
+      "nombre": "DV. Catena",
+      "bodega": "Catena Zapata",
+      "tipo": "Tinto",
+      "variedad": "Pinot Noir-Pinot Noir",
+      "anio": null,
+      "region": "Mendoza",
+      "precio": 12000,
+      "precioAnterior": null,
+      "precioCaja": null,
+      "volumenMl": 750,
+      "graduacion": 13.5,
+      "stock": 1,
+      "destacado": false,
+      "activo": true,
+      "codigoBarras": "",
+      "imagen": "img/catena-zapata-dv-catena.png",
+      "descripcion": "Este vino es un exponente elegante y sofisticado que combina uvas provenientes de viñedos de altura. Destaca por su frescura, equilibrio y una complejidad aromática que refleja la tipicidad del terroir mendocino.",
+      "notas": [
+        "frutos rojos frescos",
+        "notas terrosas",
+        "toques de vainilla"
+      ],
+      "maridaje": "salmón a la parrilla, pato confitado, hongos salteados, quesos suaves"
     }
   ]
 }
