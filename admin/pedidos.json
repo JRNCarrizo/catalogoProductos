@@ -2,6 +2,52 @@
   "pendientes": [],
   "historial": [
     {
+      "id": "ped-1791034746138",
+      "codigo": "#37x1,40x2,24x1,7x1,49x1",
+      "fecha": "2026-10-03T13:39:06.138Z",
+      "estado": "confirmado",
+      "origen": "panel",
+      "total": 80000,
+      "items": [
+        {
+          "productoId": "bodega-aleanna-el-enemigo-malbec",
+          "indice": 37,
+          "nombre": "Bodega Aleanna El Enemigo",
+          "cantidad": 1,
+          "precio": 12000
+        },
+        {
+          "productoId": "catena-zapata-nicasia-malbec",
+          "indice": 40,
+          "nombre": "Catena Zapata Nicasia",
+          "cantidad": 2,
+          "precio": 5000
+        },
+        {
+          "productoId": "catena-zapata-catena-apellation-lunlunta-malbec",
+          "indice": 24,
+          "nombre": "Catena Zapata Catena Apellation Lunlunta",
+          "cantidad": 1,
+          "precio": 18000
+        },
+        {
+          "productoId": "catena-zapata-saint-felicien-tributo-fernando-maza",
+          "indice": 7,
+          "nombre": "Catena Zapata Saint felicien Tributo Fernando Maza",
+          "cantidad": 1,
+          "precio": 20000
+        },
+        {
+          "productoId": "catena-zapata-dv-nicasia-vineyard-paraje-altamira",
+          "indice": 49,
+          "nombre": "Catena Zapata DV. Nicasia Vineyard Paraje Altamira",
+          "cantidad": 1,
+          "precio": 20000
+        }
+      ],
+      "avisos": []
+    },
+    {
       "id": "ped-1786797041920",
       "codigo": "#3x1,43x3,46x2,45x2,54x2,48x1,17x3,18x1,19x1,57x1,44x2",
       "fecha": "2026-08-15T12:30:41.920Z",
