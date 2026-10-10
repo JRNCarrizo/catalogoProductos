@@ -2,6 +2,101 @@
   "pendientes": [],
   "historial": [
     {
+      "id": "ped-1791643602074",
+      "codigo": "#61x1,60x1,34x1,36x1,41x1,42x3,64x1,75x1,30x3,31x1,32x1,45x2",
+      "fecha": "2026-10-10T14:46:42.074Z",
+      "estado": "confirmado",
+      "origen": "panel",
+      "total": 234000,
+      "items": [
+        {
+          "productoId": "el-enemigo-gran-enemigo-chacayes-cabernet-franc",
+          "indice": 61,
+          "nombre": "El Enemigo Gran Enemigo Chacayes",
+          "cantidad": 1,
+          "precio": 30000
+        },
+        {
+          "productoId": "luca-wines-nico-by-luca-malbec",
+          "indice": 60,
+          "nombre": "Luca Wines Nico By Luca",
+          "cantidad": 1,
+          "precio": 70000
+        },
+        {
+          "productoId": "la-posta-la-posta-bonarda",
+          "indice": 34,
+          "nombre": "La Posta La Posta Bonarda",
+          "cantidad": 1,
+          "precio": 12000
+        },
+        {
+          "productoId": "la-posta-la-posta-paulucci",
+          "indice": 36,
+          "nombre": "La Posta La Posta Paulucci",
+          "cantidad": 1,
+          "precio": 12000
+        },
+        {
+          "productoId": "bodega-aleanna-el-enemigo-malbec",
+          "indice": 41,
+          "nombre": "Bodega Aleanna El Enemigo",
+          "cantidad": 1,
+          "precio": 12000
+        },
+        {
+          "productoId": "bodega-aleanna-enemigo-cabernet-franc",
+          "indice": 42,
+          "nombre": "Bodega Aleanna El Enemigo",
+          "cantidad": 3,
+          "precio": 12000
+        },
+        {
+          "productoId": "pasarisa-merlot",
+          "indice": 64,
+          "nombre": "Pasarisa Pasarisa",
+          "cantidad": 1,
+          "precio": 12000
+        },
+        {
+          "productoId": "catena-zapata-dv-catena",
+          "indice": 75,
+          "nombre": "Catena Zapata DV. Catena",
+          "cantidad": 1,
+          "precio": 12000
+        },
+        {
+          "productoId": "catena-zapata-saint-felicien-malbec",
+          "indice": 30,
+          "nombre": "Catena Zapata Saint Felicien",
+          "cantidad": 3,
+          "precio": 6000
+        },
+        {
+          "productoId": "catena-zapata-saint-felicien-cabernet-franc",
+          "indice": 31,
+          "nombre": "Catena Zapata Saint Felicien",
+          "cantidad": 1,
+          "precio": 5000
+        },
+        {
+          "productoId": "catena-zapata-saint-felicien-pinot-noir",
+          "indice": 32,
+          "nombre": "Catena Zapata Saint Felicien",
+          "cantidad": 1,
+          "precio": 5000
+        },
+        {
+          "productoId": "catena-zapata-nicasia-cabernet-franc",
+          "indice": 45,
+          "nombre": "Catena Zapata Nicasia",
+          "cantidad": 2,
+          "precio": 5000
+        }
+      ],
+      "avisos": []
+    },
+    {
       "id": "ped-1791034746138",
       "codigo": "#37x1,40x2,24x1,7x1,49x1",
       "fecha": "2026-10-03T13:39:06.138Z",
