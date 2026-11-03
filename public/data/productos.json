@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-11-03T21:52:26.760Z",
+  "actualizado": "2026-11-03T21:57:49.365Z",
   "moneda": "ARS",
   "productos": [
     {
@@ -131,32 +131,6 @@
         "cítricos frescos"
       ],
       "maridaje": "frutos de mar, sushi, pescados grillados, entradas gourmet"
-    },
-    {
-      "id": "catena-zapata-saint-felicien-nature",
-      "nombre": "Saint felicien Nature",
-      "bodega": "Catena Zapata",
-      "tipo": "Espumante",
-      "variedad": "Chardonnay - Pinot Noir",
-      "anio": null,
-      "region": "Mendoza",
-      "precio": 14000,
-      "precioAnterior": null,
-      "precioCaja": null,
-      "volumenMl": 750,
-      "graduacion": 12.5,
-      "stock": 1,
-      "destacado": false,
-      "activo": true,
-      "codigoBarras": "",
-      "imagen": "img/catena-zapata-saint-felicien-nature.png",
-      "descripcion": "Este espumante de alta gama destaca por su elegancia y frescura, elaborado bajo el método tradicional. Presenta una burbuja fina y persistente con un perfil seco y sofisticado, ideal para celebraciones especiales.",
-      "notas": [
-        "cítricos",
-        "pan tostado",
-        "frutos secos"
-      ],
-      "maridaje": "frutos de mar, sushi, quesos suaves, entradas gourmet"
     },
     {
       "id": "catena-zapata-catena-apellation-vista-flores",
