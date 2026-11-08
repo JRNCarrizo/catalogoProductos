@@ -2,6 +2,52 @@
   "pendientes": [],
   "historial": [
     {
+      "id": "ped-1794098158361",
+      "codigo": "#32x1,31x4,45x4,46x3,3x1",
+      "fecha": "2026-11-08T00:35:58.361Z",
+      "estado": "confirmado",
+      "origen": "panel",
+      "total": 94000,
+      "items": [
+        {
+          "productoId": "catena-zapata-saint-felicien-cabernet-franc",
+          "indice": 32,
+          "nombre": "Catena Zapata Saint Felicien",
+          "cantidad": 1,
+          "precio": 5000
+        },
+        {
+          "productoId": "catena-zapata-saint-felicien-malbec",
+          "indice": 31,
+          "nombre": "Catena Zapata Saint Felicien",
+          "cantidad": 4,
+          "precio": 6000
+        },
+        {
+          "productoId": "catena-zapata-nicasia-malbec",
+          "indice": 45,
+          "nombre": "Catena Zapata Nicasia",
+          "cantidad": 4,
+          "precio": 5000
+        },
+        {
+          "productoId": "catena-zapata-nicasia-cabernet-franc",
+          "indice": 46,
+          "nombre": "Catena Zapata Nicasia",
+          "cantidad": 3,
+          "precio": 5000
+        },
+        {
+          "productoId": "domaine-nico-domaine-nico-grand-pere",
+          "indice": 3,
+          "nombre": "Domaine Nico Domaine Nico Grand Pere",
+          "cantidad": 1,
+          "precio": 30000
+        }
+      ],
+      "avisos": []
+    },
+    {
       "id": "ped-1791643602074",
       "codigo": "#61x1,60x1,34x1,36x1,41x1,42x3,64x1,75x1,30x3,31x1,32x1,45x2",
       "fecha": "2026-10-10T14:46:42.074Z",
