@@ -79,6 +79,16 @@ export function estaActivo(producto: Pick<Producto, 'activo'>): boolean {
   return producto.activo !== false
 }
 
+/** Stock en 0 → oculto en la web; si vuelve a subir → publicado. */
+export function visibilidadPorStock(producto: Producto, stockAnterior: number): Producto {
+  const nuevo = Number(producto.stock) || 0
+  const anterior = Number(stockAnterior) || 0
+  if (nuevo === anterior) return producto
+  if (nuevo <= 0) return { ...producto, activo: false }
+  if (nuevo > anterior) return { ...producto, activo: true }
+  return producto
+}
+
 export function generarId(producto: Producto, existentes: Set<string>): string {
   const base = [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
   const slug = base

@@ -54,7 +54,8 @@ function parsearPedido(texto, productos) {
 }
 
 function etiquetaProducto(producto) {
-  return [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
+  const base = [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
+  return producto.variedad ? `${base} · ${producto.variedad}` : base
 }
 
 function formatearPesos(valor) {

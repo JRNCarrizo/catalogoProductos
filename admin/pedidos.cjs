@@ -19,6 +19,20 @@ function subtotalLinea(producto, cantidad) {
   return precioUnitario(producto, cantidad) * cantidad
 }
 
+function etiquetaProducto(producto) {
+  const base = [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
+  return producto.variedad ? `${base} · ${producto.variedad}` : base
+}
+
+/** Stock en 0 → oculto en la web; si vuelve a subir → publicado. */
+function visibilidadPorStock(producto, stockAnterior) {
+  const nuevo = Number(producto.stock) || 0
+  const anterior = Number(stockAnterior) || 0
+  if (nuevo === anterior) return
+  if (nuevo <= 0) producto.activo = false
+  else if (nuevo > anterior) producto.activo = true
+}
+
 function parsearPedido(texto, productos) {
   const codigo = extraerCodigoPedido(texto)
   if (!codigo) {
@@ -48,7 +62,7 @@ function parsearPedido(texto, productos) {
       indice,
       cantidad,
       productoId: producto?.id || null,
-      nombre: producto ? [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ') : `#${indice}`,
+      nombre: producto ? etiquetaProducto(producto) : `#${indice}`,
       precio: unitario,
       stock: producto ? Number(producto.stock) || 0 : 0,
       producto,
@@ -97,6 +111,7 @@ function descontarStock(catalogo, lineas) {
       avisos.push(`${producto.nombre}: pedían ${linea.cantidad}, hay ${stock}`)
     }
     producto.stock = Math.max(0, stock - linea.cantidad)
+    visibilidadPorStock(producto, stock)
   }
 
   return {
@@ -115,7 +130,9 @@ function devolverStock(catalogo, items) {
   for (const item of items || []) {
     const producto = porId.get(item.productoId)
     if (!producto) continue
-    producto.stock = Math.max(0, (Number(producto.stock) || 0) + Number(item.cantidad || 0))
+    const anterior = Number(producto.stock) || 0
+    producto.stock = Math.max(0, anterior + Number(item.cantidad || 0))
+    visibilidadPorStock(producto, anterior)
   }
   return {
     ...catalogo,

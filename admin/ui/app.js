@@ -104,17 +104,28 @@ function productoActual() {
   return estado.catalogo.productos.find((producto) => producto.id === estado.seleccionId) ?? null
 }
 
+/** Stock en 0 → oculto en la web; si vuelve a subir → publicado. */
+function visibilidadPorStock(producto, stockAnterior) {
+  const nuevo = Number(producto.stock) || 0
+  const anterior = Number(stockAnterior) || 0
+  if (nuevo === anterior) return
+  if (nuevo <= 0) producto.activo = false
+  else if (nuevo > anterior) producto.activo = true
+}
+
 function ajustarStock(id, delta) {
   const producto = estado.catalogo.productos.find((item) => item.id === id)
   if (!producto) return
 
   const actual = Number(producto.stock) || 0
   producto.stock = Math.max(0, actual + delta)
+  visibilidadPorStock(producto, actual)
   marcarSucio(true)
 
   // Si ese producto está abierto en el editor, sincronizamos el campo.
   if (estado.seleccionId === id) {
     elementos.formulario.elements.stock.value = producto.stock
+    elementos.formulario.elements.activo.checked = producto.activo !== false
   }
 
   dibujarLista()
@@ -331,6 +342,7 @@ function leerFormulario() {
   if (!producto) return
 
   const campos = elementos.formulario.elements
+  const stockAnterior = producto.stock
   producto.nombre = campos.nombre.value.trim()
   producto.bodega = campos.bodega.value.trim()
   producto.tipo = campos.tipo.value
@@ -352,6 +364,8 @@ function leerFormulario() {
   producto.maridaje = campos.maridaje.value.trim()
   producto.destacado = campos.destacado.checked
   producto.activo = campos.activo.checked
+  visibilidadPorStock(producto, stockAnterior)
+  campos.activo.checked = producto.activo !== false
 
   elementos.tituloEditor.textContent = producto.nombre || 'Nuevo vino'
   marcarSucio(true)

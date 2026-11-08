@@ -1,7 +1,7 @@
 import { sitioDesdeRuta } from '../config/sitio'
 import type { ItemCarrito, Producto } from '../types'
 import { precio, precioUnitario, subtotalLinea } from './formato'
-import { codificarPedido } from './pedidoCodigo'
+import { codificarPedido, etiquetaProducto } from './pedidoCodigo'
 
 function sitioActual() {
   return sitioDesdeRuta()
@@ -14,7 +14,7 @@ function enlace(mensaje: string): string {
 
 export function consultaProducto(producto: Producto): string {
   const s = sitioActual()
-  const etiqueta = [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
+  const etiqueta = etiquetaProducto(producto)
   return enlace(
     `Hola ${s.nombre}! Quiero consultar por *${etiqueta}* (${precio(producto.precio)}). ¿Tienen stock?`,
   )
@@ -34,7 +34,7 @@ export function pedido(
 ): string {
   const s = sitioActual()
   const lineas = items.map(({ producto, cantidad }) => {
-    const etiqueta = [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
+    const etiqueta = etiquetaProducto(producto)
     const unitario = precioUnitario(producto, cantidad)
     const promo = cantidad >= 2 && producto.precioCaja != null ? ` (${precio(unitario)} c/u)` : ''
     return `• ${cantidad} x ${etiqueta} — ${precio(subtotalLinea(producto, cantidad))}${promo}`

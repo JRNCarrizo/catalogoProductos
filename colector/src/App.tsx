@@ -35,6 +35,7 @@ import {
   estaActivo,
   precio,
   productoVacio,
+  visibilidadPorStock,
   type Catalogo,
   type Producto,
 } from './types'
@@ -116,7 +117,8 @@ export default function App() {
     if (!catalogo) return
     const productosNuevos = catalogo.productos.map((producto) => {
       if (producto.id !== id) return producto
-      return { ...producto, stock: Math.max(0, (Number(producto.stock) || 0) + delta) }
+      const anterior = Number(producto.stock) || 0
+      return visibilidadPorStock({ ...producto, stock: Math.max(0, anterior + delta) }, anterior)
     })
     const actualizado = productosNuevos.find((producto) => producto.id === id) ?? null
     await registrarCambio('edicion', actualizado, id)
@@ -131,9 +133,15 @@ export default function App() {
     }
 
     const ids = new Set(catalogo.productos.map((item) => item.id))
-    const final = { ...producto }
+    const previo = esNuevo ? null : catalogo.productos.find((item) => item.id === producto.id)
+    let final = { ...producto }
     if (!final.id || final.id.startsWith('tmp-')) {
       final.id = generarId(final, ids)
+    }
+    if (esNuevo) {
+      if ((Number(final.stock) || 0) <= 0) final.activo = false
+    } else if (previo) {
+      final = visibilidadPorStock(final, Number(previo.stock) || 0)
     }
 
     const productosNuevos = esNuevo

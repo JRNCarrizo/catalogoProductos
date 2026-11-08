@@ -70,5 +70,6 @@ export function parsearPedido(texto: string, productos: Producto[]): PedidoResue
 }
 
 export function etiquetaProducto(producto: Producto): string {
-  return [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
+  const base = [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
+  return producto.variedad ? `${base} · ${producto.variedad}` : base
 }

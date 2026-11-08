@@ -67,7 +67,8 @@ export function subtotalLinea(producto: Producto, cantidad: number): number {
 }
 
 export function etiquetaProducto(producto: Producto): string {
-  return [producto.nombre, producto.variedad, producto.anio].filter(Boolean).join(' · ')
+  const base = [producto.bodega, producto.nombre, producto.anio].filter(Boolean).join(' ')
+  return producto.variedad ? `${base} · ${producto.variedad}` : base
 }
 
 /** Arma un código #índicexcant a partir de líneas elegidas (índice = posición en el catálogo). */
